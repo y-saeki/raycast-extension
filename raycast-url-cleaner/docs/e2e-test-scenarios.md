@@ -23,6 +23,8 @@
 | 6 | FigJamボードのURL(`node-id`+`t`付き) | `node-id`は残り`t`が消える | [ ] |
 | 6a | Dev ModeのFigma URL(`node-id`+`m=dev`+`t`付き) | `node-id`と`m=dev`が残り`t`が消える | [ ] |
 | 6b | プロトタイプ再生URL(`/proto/`、`page-id`・`starting-point-node-id`・`scaling`+`t`付き) | 名前スラッグと`t`だけが消え、再生用パラメータは残る | [ ] |
+| 6c | Figma SlidesのURL(`/slides/`または`/deck/`) | 名前スラッグと`t`が消え、`node-id`は残る | [ ] |
+| 6d | Figmaのファイル以外のページ(例: `https://www.figma.com/pricing`や3階層のマーケティングページ) | パスは一切変わらない(クエリの整理だけ) | [ ] |
 
 ## 汎用パラメータ除去(サイト固有ルール未対応のドメイン)
 

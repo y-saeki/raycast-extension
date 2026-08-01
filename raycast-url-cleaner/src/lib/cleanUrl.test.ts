@@ -63,6 +63,21 @@ describe("cleanUrl", () => {
     );
   });
 
+  it("drops the name slug on a Figma Slides URL", () => {
+    const input = "https://www.figma.com/slides/abcXYZ123/SomeDeck?node-id=1-2&t=someToken-1";
+    expect(cleanUrl(input)).toBe("https://www.figma.com/slides/abcXYZ123/?node-id=1-2");
+  });
+
+  it("drops the name slug on a Figma Make URL", () => {
+    const input = "https://www.figma.com/make/abcXYZ123/SomeApp?node-id=1-2&t=someToken-1";
+    expect(cleanUrl(input)).toBe("https://www.figma.com/make/abcXYZ123/?node-id=1-2");
+  });
+
+  it("keeps the last path segment of a non-file figma.com page", () => {
+    const input = "https://www.figma.com/legal/us/privacy?t=someToken-1";
+    expect(cleanUrl(input)).toBe("https://www.figma.com/legal/us/privacy");
+  });
+
   it("strips generic utm params from an unrecognized domain", () => {
     const input = "https://example.com/blog/post?utm_source=newsletter&utm_medium=email&id=42";
     expect(cleanUrl(input)).toBe("https://example.com/blog/post?id=42");
