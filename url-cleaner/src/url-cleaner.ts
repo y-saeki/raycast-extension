@@ -1,10 +1,6 @@
-import { Clipboard, getPreferenceValues, popToRoot, showHUD } from "@raycast/api";
+import { Clipboard, showHUD } from "@raycast/api";
 import { cleanText } from "./lib/cleanUrl";
 import { loadEnabledRules } from "./lib/ruleStore";
-
-interface Preferences {
-  exitAfterCleaning: boolean;
-}
 
 export default async function Command() {
   const clipboardText = await Clipboard.readText();
@@ -23,11 +19,5 @@ export default async function Command() {
   }
 
   await Clipboard.copy(text);
-
-  const { exitAfterCleaning } = getPreferenceValues<Preferences>();
-  if (exitAfterCleaning) {
-    await popToRoot({ clearSearchBar: true });
-  }
-
   await showHUD("URLをクリーンにしました");
 }
