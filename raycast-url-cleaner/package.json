@@ -12,8 +12,8 @@
   "license": "MIT",
   "commands": [
     {
-      "name": "clean-clipboard",
-      "title": "Clean Link from Clipboard",
+      "name": "url-cleaner",
+      "title": "Clean URL from Clipboard",
       "description": "Remove tracking parameters and normalize the URL(s) found in the clipboard.",
       "mode": "no-view"
     }
@@ -22,7 +22,7 @@
     {
       "name": "exitAfterCleaning",
       "title": "Exit After Cleaning",
-      "description": "Whether to close Raycast after cleaning the link.",
+      "description": "Whether to close Raycast after cleaning the URL.",
       "type": "checkbox",
       "default": false,
       "label": "Exit Raycast after cleaning",

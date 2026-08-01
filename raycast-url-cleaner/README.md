@@ -4,7 +4,7 @@
 
 ## コマンド
 
-- **Clean Link from Clipboard** (`no-view`): クリップボードのテキストからURLを検出し、その場でクリーンな状態に書き換えます。Raycastの設定でグローバルホットキー(例: `Cmd+Shift+U`)を割り当てて使うことを想定しています。
+- **Clean URL from Clipboard** (`no-view`): クリップボードのテキストからURLを検出し、その場でクリーンな状態に書き換えます。Raycastの設定でグローバルホットキー(例: `Cmd+Shift+U`)を割り当てて使うことを想定しています。
 
 ## サイト固有ルール
 
