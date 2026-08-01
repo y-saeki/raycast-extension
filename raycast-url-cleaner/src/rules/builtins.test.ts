@@ -35,4 +35,16 @@ describe("built-in rules", () => {
     expect(slug).toBeGreaterThanOrEqual(0);
     expect(slug).toBeLessThan(fallback);
   });
+
+  it("order the embedded playlist rule before the video path rule, which would otherwise shadow it", () => {
+    const playlist = builtinRules.findIndex((rule) => rule.id === "builtin.youtube.embed-playlist");
+    const videoPath = builtinRules.findIndex((rule) => rule.id === "builtin.youtube.video-path");
+    expect(playlist).toBeGreaterThanOrEqual(0);
+    expect(playlist).toBeLessThan(videoPath);
+  });
+
+  it("run the youtu.be shortening rule in the global stage, after the site rules have normalized the URL", () => {
+    const shorten = builtinRules.find((rule) => rule.id === "builtin.youtube.shorten");
+    expect(shorten?.stage).toBe("global");
+  });
 });

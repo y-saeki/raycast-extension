@@ -16,9 +16,20 @@
 |---|---|---|---|
 | 2 | Amazon商品ページのURL(長い商品名スラッグ + `ref=`付き) | `https://www.amazon.co.jp/dp/<ASIN>` に短縮 | [ ] |
 | 3 | Xの投稿URL(`?s=20&t=...`付き) | クエリが全部消えて `.../status/<id>` だけになる | [ ] |
-| 4 | `youtu.be/xxxx?si=...` 形式 | `https://www.youtube.com/watch?v=xxxx` に展開される | [ ] |
-| 5 | `youtube.com/watch?v=xxxx&si=...&t=42s` | `v`と`t`だけ残り`si`等が消える | [ ] |
+| 4 | `youtu.be/xxxx?si=...` 形式 | `https://youtu.be/xxxx` のまま短く保たれ、`si`が消える | [ ] |
+| 5 | `youtube.com/watch?v=xxxx&si=...&t=42s` | `https://youtu.be/xxxx?t=42s` に短縮される | [ ] |
 | 6 | FigJamボードのリンク(`node-id`+`t`付き) | `node-id`は残り`t`が消える | [ ] |
+
+## YouTube(2段構成の確認)
+
+| # | クリップボードにコピーするもの | 期待される結果 | 確認 |
+|---|---|---|---|
+| 4-1 | Shortsの共有URL(`youtube.com/shorts/xxxx?feature=share`) | `https://youtu.be/xxxx` になり、ブラウザで開くと同じ動画が再生される | [ ] |
+| 4-2 | ライブ配信のURL(`youtube.com/live/xxxx?si=...`) | `https://youtu.be/xxxx` になり、同じ配信が開く | [ ] |
+| 4-3 | 再生リスト再生中の動画URL(`watch?v=xxxx&list=PLyyy&index=3`) | `https://youtu.be/xxxx?list=PLyyy` になり、再生リスト付きで開く | [ ] |
+| 4-4 | 再生リストページのURL(`youtube.com/playlist?list=PLyyy&si=...`) | `https://www.youtube.com/playlist?list=PLyyy`(youtube.comのまま) | [ ] |
+| 4-5 | YouTube MusicのURL(`music.youtube.com/watch?v=xxxx&si=...`) | ホストが `music.youtube.com` のまま残り、`youtu.be`に変換されない | [ ] |
+| 4-6 | `builtin.youtube.shorten` を無効化 → `youtube.com/shorts/xxxx` をクリーン | `https://www.youtube.com/watch?v=xxxx` になる(短縮されない) | [ ] |
 
 ## 汎用パラメータ除去(サイト固有ルール未対応のドメイン)
 
@@ -50,11 +61,12 @@
 
 | # | 内容 | 期待結果 | 確認 |
 |---|---|---|---|
-| 18 | コマンドを開く | 「Built-in Rules」に組み込みルール7件が全て有効(緑チェック)で並ぶ。「Your Rules」は空 | [ ] |
+| 18 | コマンドを開く | 「Built-in Rules」に組み込みルール11件が全て有効(緑チェック)で並ぶ。「Your Rules」は空 | [ ] |
 | 19 | `builtin.amazon.product`(Amazon)を選んでEnterで無効化 → Amazon商品URLをコピーしてクリーン | `/dp/<ASIN>` への短縮が行われず、`utm_*`等の汎用パラメータ除去だけが効く | [ ] |
 | 20 | 上記ルールを再度有効化 → 同じURLをクリーン | シナリオ#2と同じ結果に戻る | [ ] |
 | 21 | `builtin.generic.tracking` を無効化 → `?utm_source=x` 付きURLをクリーン | `utm_source`が残る(HUDは「変更はありませんでした」) | [ ] |
 | 22 | `⌘N` でルール作成。Hosts に `note.com`、Query Mode に `Remove`、Query Params に `from` を入力 | Test URLに `https://note.com/xxx?from=a&id=1` を入れるとプレビューが `?id=1` を示す | [ ] |
+| 22-1 | `⌘N` でルール作成。Hosts に `example.com`、Has Params に `v`、Set Path に `/${v}` を入力 | Test URLに `https://example.com/watch?v=abc` を入れるとプレビューが `https://example.com/abc` を示し、`?v=` のないURLでは変化しない | [ ] |
 | 23 | 上記ルールを保存 → 一覧に戻る | 「Your Rules」セクションに追加され、有効状態で表示される | [ ] |
 | 24 | 作成したルールが効くURLをコピーしてクリーン | ルールどおりに変換される | [ ] |
 | 25 | 必須項目を空にして保存しようとする | 該当フィールドにインラインエラーが出て保存されない | [ ] |

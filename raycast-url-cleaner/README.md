@@ -15,13 +15,19 @@ URLの変換はすべて「ルール」で表現されます。組み込みル�
 |---|---|---|
 | `builtin.amazon.product` | Amazon | 商品名スラッグや`ref`等を除去し `/dp/<ASIN>` の短い形に正規化 |
 | `builtin.x.status` | X (Twitter) | ステータスURLのクエリパラメータを全削除 |
-| `builtin.youtube.short` | YouTube | `youtu.be/<id>` を `youtube.com/watch?v=<id>` に展開(`t`は保持) |
-| `builtin.youtube.watch` | YouTube | `v`/`t`以外のパラメータを削除 |
+| `builtin.youtube.short` | YouTube | `youtu.be/<id>` を正規化(`t`・`list`は保持) |
+| `builtin.youtube.embed-playlist` | YouTube | `embed/videoseries?list=<id>` を再生リストページに変換 |
+| `builtin.youtube.video-path` | YouTube | Shorts・Live・埋め込み(`/shorts/`・`/live/`・`/embed/`・`/v/`)を動画URLに変換 |
+| `builtin.youtube.watch` | YouTube | `v`/`t`/`list`以外のパラメータを削除 |
+| `builtin.youtube.playlist` | YouTube | 再生リストURLから `list` 以外のパラメータを削除 |
+| `builtin.youtube.shorten` | YouTube | `youtube.com/watch?v=<id>` を `youtu.be/<id>` に短縮。**このルールを無効にすると `youtube.com` 形式で出力されます** |
 | `builtin.figma.slug` | Figma / FigJam | ファイル/ボード名スラッグと共有トークン(`t`)を除去し `node-id` を保持 |
 | `builtin.figma.share-token` | Figma / FigJam | 上記に該当しないFigma URLから `node-id` 以外のパラメータを除去 |
 | `builtin.generic.tracking` | (全サイト) | `utm_*`・`gclid`・`fbclid`などの汎用トラッキングパラメータを除去 |
 
 サイト固有ルールは**最初にマッチした1つだけ**が適用され、その後に全サイト対象のルールが適用されます。ユーザーのルールは組み込みルールより先に評価されるため、同じサイトのルールを自分で書けば挙動を上書きできます。
+
+YouTubeはこの仕組みを利用した2段構成になっています。サイトルールが `youtu.be`・Shorts・Live・埋め込みをすべて `youtube.com/watch?v=<id>` の形に揃え、最後に `builtin.youtube.shorten` がそれを `youtu.be/<id>` へ短縮します。既定では短いURLが出力され、`youtube.com` 形式のまま使いたい場合は `builtin.youtube.shorten` だけを無効にしてください。なお `music.youtube.com` は別サービスのURLになってしまうため短縮の対象外です。
 
 ### ルールを追加する
 

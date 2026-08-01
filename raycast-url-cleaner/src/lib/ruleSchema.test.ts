@@ -63,6 +63,24 @@ describe("parseRule", () => {
     expect(errorsOf({ ...validRule, match: { hosts: ["a.com"], regex: "x" } })).toContain("match.regex: unknown field");
   });
 
+  it("accepts hasParams and trims the names", () => {
+    const result = parseRule({ ...validRule, match: { hosts: ["a.com"], hasParams: [" v ", ""] } });
+    expect(result.ok).toBe(true);
+    if (result.ok) expect(result.value.match.hasParams).toEqual(["v"]);
+  });
+
+  it("rejects hasParams that is not an array of strings", () => {
+    expect(errorsOf({ ...validRule, match: { hosts: ["a.com"], hasParams: "v" } })).toContain(
+      "match.hasParams: must be an array of strings",
+    );
+  });
+
+  it("does not accept hasParams on its own as a site rule condition", () => {
+    expect(errorsOf({ ...validRule, match: { hasParams: ["v"] } })).toContain(
+      "match: needs at least one of hosts, hostPattern or pathPattern",
+    );
+  });
+
   it("rejects setParams whose values are not strings", () => {
     expect(errorsOf({ ...validRule, actions: { setParams: { v: 1 } } }).join()).toContain("actions.setParams");
   });
