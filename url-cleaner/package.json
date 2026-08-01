@@ -24,17 +24,6 @@
       "mode": "view"
     }
   ],
-  "preferences": [
-    {
-      "name": "exitAfterCleaning",
-      "title": "Exit After Cleaning",
-      "description": "Whether to close Raycast after cleaning the URL.",
-      "type": "checkbox",
-      "default": false,
-      "label": "Exit Raycast after cleaning",
-      "required": false
-    }
-  ],
   "dependencies": {
     "@raycast/api": "^1.104.24",
     "@raycast/utils": "^1.19.1"
