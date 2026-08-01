@@ -21,8 +21,8 @@ URLの変換はすべて「ルール」で表現されます。組み込みル�
 | `builtin.youtube.watch` | YouTube | `v`/`t`/`list`以外のパラメータを削除 |
 | `builtin.youtube.playlist` | YouTube | 再生リストURLから `list` 以外のパラメータを削除 |
 | `builtin.youtube.shorten` | YouTube | `youtube.com/watch?v=<id>` を `youtu.be/<id>` に短縮。**このルールを無効にすると `youtube.com` 形式で出力されます** |
-| `builtin.figma.slug` | Figma / FigJam | ファイル/ボード名スラッグと共有トークン(`t`)を除去し `node-id` を保持 |
-| `builtin.figma.share-token` | Figma / FigJam | 上記に該当しないFigma URLから `node-id` 以外のパラメータを除去 |
+| `builtin.figma.slug` | Figma | ファイル名スラッグと共有トークン(`t`)を除去し、`node-id`・`m`(Dev Mode等)・`ready-for-dev`・`version-id`・プロトタイプ再生用パラメータを保持。Design・プロトタイプ・FigJam・Slides・Sites・Buzz・Makeに対応 |
+| `builtin.figma.share-token` | Figma | 上記に該当しないFigma URLから、上と同じ保持対象以外のパラメータを除去(パスは変更しない) |
 | `builtin.generic.tracking` | (全サイト) | `utm_*`・`gclid`・`fbclid`などの汎用トラッキングパラメータを除去 |
 
 サイト固有ルールは**最初にマッチした1つだけ**が適用され、その後に全サイト対象のルールが適用されます。ユーザーのルールは組み込みルールより先に評価されるため、同じサイトのルールを自分で書けば挙動を上書きできます。
