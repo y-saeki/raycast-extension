@@ -1,5 +1,6 @@
 import { Clipboard, getPreferenceValues, popToRoot, showHUD } from "@raycast/api";
 import { cleanText } from "./lib/cleanUrl";
+import { loadEnabledRules } from "./lib/ruleStore";
 
 interface Preferences {
   exitAfterCleaning: boolean;
@@ -13,7 +14,8 @@ export default async function Command() {
     return;
   }
 
-  const { text, changed } = cleanText(clipboardText);
+  const rules = await loadEnabledRules();
+  const { text, changed } = cleanText(clipboardText, rules);
 
   if (!changed) {
     await showHUD("URLが見つからないか、変更はありませんでした");

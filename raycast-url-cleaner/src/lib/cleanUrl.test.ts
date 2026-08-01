@@ -71,13 +71,9 @@ describe("cleanText", () => {
   });
 
   it("cleans multiple URLs in the same text", () => {
-    const result = cleanText(
-      "https://youtu.be/dQw4w9WgXcQ?si=abc and https://x.com/someuser/status/123?s=20",
-    );
+    const result = cleanText("https://youtu.be/dQw4w9WgXcQ?si=abc and https://x.com/someuser/status/123?s=20");
     expect(result.changed).toBe(true);
-    expect(result.text).toBe(
-      "https://www.youtube.com/watch?v=dQw4w9WgXcQ and https://x.com/someuser/status/123",
-    );
+    expect(result.text).toBe("https://www.youtube.com/watch?v=dQw4w9WgXcQ and https://x.com/someuser/status/123");
   });
 
   it("does not modify text when the only URL is already clean", () => {
