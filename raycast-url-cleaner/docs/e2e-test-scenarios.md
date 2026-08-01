@@ -20,6 +20,8 @@
 | 3 | Xの投稿URL(`?s=20&t=...`付き) | クエリが全部消えて `.../status/<id>` だけになる | [ ] |
 | 4 | `youtu.be/xxxx?si=...` 形式 | `https://youtu.be/xxxx` のまま短く保たれ、`si`が消える | [ ] |
 | 5 | `youtube.com/watch?v=xxxx&si=...&t=42s` | `https://youtu.be/xxxx?t=42s` に短縮される | [ ] |
+| 5-1 | Google Meetの会議URL(`meet.google.com/xxx-yyyy-zzz?authuser=0&hs=122`) | クエリが全部消えて `https://meet.google.com/xxx-yyyy-zzz` だけになり、そのURLで実際に会議に参加できる | [ ] |
+| 5-2 | Googleカレンダーの予定から取得した `meet.google.com/lookup/xxxx?authuser=1` | クエリが全部消えて `lookup/xxxx` のパスは残り、そのURLで会議に参加できる | [ ] |
 | 6 | FigJamボードのURL(`node-id`+`t`付き) | `node-id`は残り`t`が消える | [ ] |
 | 6a | Dev ModeのFigma URL(`node-id`+`m=dev`+`t`付き) | `node-id`と`m=dev`が残り`t`が消える | [ ] |
 | 6b | プロトタイプ再生URL(`/proto/`、`page-id`・`starting-point-node-id`・`scaling`+`t`付き) | 名前スラッグと`t`だけが消え、再生用パラメータは残る | [ ] |
@@ -67,7 +69,7 @@
 
 | # | 内容 | 期待結果 | 確認 |
 |---|---|---|---|
-| 18 | コマンドを開く | 「Built-in Rules」に組み込みルール11件が全て有効(緑チェック)で並ぶ。「Your Rules」は空 | [ ] |
+| 18 | コマンドを開く | 「Built-in Rules」に組み込みルール13件が全て有効(緑チェック)で並ぶ。「Your Rules」は空 | [ ] |
 | 19 | `builtin.amazon.product`(Amazon)を選んでEnterで無効化 → Amazon商品URLをコピーしてクリーン | `/dp/<ASIN>` への短縮が行われず、`utm_*`等の汎用パラメータ除去だけが効く | [ ] |
 | 20 | 上記ルールを再度有効化 → 同じURLをクリーン | シナリオ#2と同じ結果に戻る | [ ] |
 | 21 | `builtin.generic.tracking` を無効化 → `?utm_source=x` 付きURLをクリーン | `utm_source`が残る(HUDは「変更はありませんでした」) | [ ] |
