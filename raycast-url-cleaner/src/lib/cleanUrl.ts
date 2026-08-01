@@ -1,9 +1,13 @@
+import { builtinRules } from "../rules";
+import type { UrlRule } from "../rules/types";
 import { extractUrls } from "./extractUrls";
-import { stripGenericTrackingParams } from "./genericTrackingParams";
-import { findRule } from "./rules";
+import { applyRules } from "./ruleEngine";
 
-/** Cleans a single URL string: applies a matching site rule (if any), then strips generic tracking params. */
-export function cleanUrl(rawUrl: string): string {
+/**
+ * Cleans a single URL string by running it through `rules`.
+ * Returns the input unchanged when it is not a URL, or when no rule changed anything.
+ */
+export function cleanUrl(rawUrl: string, rules: UrlRule[] = builtinRules): string {
   let url: URL;
   try {
     url = new URL(rawUrl);
@@ -11,10 +15,13 @@ export function cleanUrl(rawUrl: string): string {
     return rawUrl;
   }
 
-  findRule(url)?.transform(url);
-  stripGenericTrackingParams(url);
+  const before = url.toString();
+  applyRules(url, rules);
+  const after = url.toString();
 
-  return url.toString();
+  // Returning `rawUrl` keeps URLs that no rule touched byte-identical, so that
+  // `new URL(...).toString()` normalization is never reported as a change.
+  return after === before ? rawUrl : after;
 }
 
 export interface CleanTextResult {
@@ -23,7 +30,7 @@ export interface CleanTextResult {
 }
 
 /** Finds every URL in free-form text and cleans it in place, leaving the rest of the text untouched. */
-export function cleanText(text: string): CleanTextResult {
+export function cleanText(text: string, rules: UrlRule[] = builtinRules): CleanTextResult {
   const found = extractUrls(text);
   if (found.length === 0) {
     return { text, changed: false };
@@ -32,7 +39,7 @@ export function cleanText(text: string): CleanTextResult {
   let changed = false;
   let result = text;
   for (const { raw, trailing } of found) {
-    const cleaned = cleanUrl(raw);
+    const cleaned = cleanUrl(raw, rules);
     if (cleaned !== raw) {
       changed = true;
       result = result.replace(raw + trailing, cleaned + trailing);

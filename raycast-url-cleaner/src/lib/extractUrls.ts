@@ -1,4 +1,4 @@
-const URL_PATTERN = /\bhttps?:\/\/[^\s<>"'\]\)]+/gi;
+const URL_PATTERN = /\bhttps?:\/\/[^\s<>"'\])]+/gi;
 const TRAILING_PUNCTUATION = /[.,;:!?)\]}'"]+$/;
 
 export interface ExtractedUrl {
