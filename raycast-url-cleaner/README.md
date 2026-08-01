@@ -1,0 +1,40 @@
+# URL Cleaner
+
+クリップボード内のURLからトラッキングパラメータを除去し、サイトごとのルールでシンプルな形に正規化するRaycast拡張です。
+
+## コマンド
+
+- **Clean URL from Clipboard** (`no-view`): クリップボードのテキストからURLを検出し、その場でクリーンな状態に書き換えます。Raycastの設定でグローバルホットキー(例: `Cmd+Shift+U`)を割り当てて使うことを想定しています。
+
+## サイト固有ルール
+
+| サイト | 変換内容 |
+|---|---|
+| Amazon | 商品名スラッグや`ref`等を除去し `/dp/<ASIN>` の短い形に正規化 |
+| X (Twitter) | ステータスURLのクエリパラメータを全削除 |
+| YouTube | `youtu.be/<id>` を `youtube.com/watch?v=<id>` に正規化。`v`/`t`以外のパラメータを削除 |
+| Figma / FigJam | `node-id` を保持しつつ、共有トークン(`t`)等を削除 |
+
+上記に該当しないドメインには、`utm_*`・`gclid`・`fbclid`などの汎用トラッキングパラメータのブロックリストを適用します。
+
+## 開発
+
+Node.js 22.14以上が必要です([Raycast公式ドキュメント](https://developers.raycast.com/basics/getting-started))。`nvm`を使う場合は以下でリポジトリの`.nvmrc`に沿ったバージョンに切り替えられます。
+
+```sh
+nvm install
+nvm use
+```
+
+```sh
+npm install
+npm run dev    # Raycast開発モードで起動
+npm run test   # ルールのユニットテスト
+npm run lint
+```
+
+## 開発ドキュメント
+
+仕様書や開発用ドキュメントは `docs/` ディレクトリにまとめています。
+
+- [E2Eテストシナリオ](docs/e2e-test-scenarios.md): 実機のRaycastにインストールした状態で手動確認するテストケース一覧
