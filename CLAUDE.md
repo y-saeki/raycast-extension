@@ -3,7 +3,13 @@
 This file provides guidance to Claude Code when working in this repository.
 
 Individual projects may add their own `CLAUDE.md` with project-specific conventions
-(e.g. `raycast-url-cleaner/CLAUDE.md`). Those apply in addition to what is written here.
+(e.g. `url-cleaner/CLAUDE.md`). Those apply in addition to what is written here.
+
+## One directory per extension, no `raycast-` prefix
+
+This repository holds only Raycast extensions, one per directory at the repository root.
+Name each directory after the extension itself — `url-cleaner`, not `raycast-url-cleaner`.
+The `raycast-` prefix repeats what the repository name already says, so leave it off.
 
 ## Write issues and pull requests in Japanese
 
