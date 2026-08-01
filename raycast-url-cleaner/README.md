@@ -32,3 +32,9 @@ npm run dev    # Raycast開発モードで起動
 npm run test   # ルールのユニットテスト
 npm run lint
 ```
+
+## 開発ドキュメント
+
+仕様書や開発用ドキュメントは `docs/` ディレクトリにまとめています。
+
+- [E2Eテストシナリオ](docs/e2e-test-scenarios.md): 実機のRaycastにインストールした状態で手動確認するテストケース一覧
