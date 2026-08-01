@@ -65,6 +65,26 @@ describe("cleanUrl", () => {
     expect(cleanUrl(input, rules)).toBe("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
   });
 
+  it("strips all query params from a Google Meet meeting URL", () => {
+    const input = "https://meet.google.com/abc-defg-hij?authuser=0&hs=122&pli=1";
+    expect(cleanUrl(input)).toBe("https://meet.google.com/abc-defg-hij");
+  });
+
+  it("strips all query params from a Google Meet calendar lookup URL", () => {
+    const input = "https://meet.google.com/lookup/team-standup?authuser=1";
+    expect(cleanUrl(input)).toBe("https://meet.google.com/lookup/team-standup");
+  });
+
+  it("leaves an already-clean Google Meet meeting URL untouched", () => {
+    const input = "https://meet.google.com/abc-defg-hij";
+    expect(cleanUrl(input)).toBe(input);
+  });
+
+  it("cleans only tracking params on a Google Meet URL that is not a meeting URL", () => {
+    const input = "https://meet.google.com/landing?utm_source=newsletter&hl=ja";
+    expect(cleanUrl(input)).toBe("https://meet.google.com/landing?hl=ja");
+  });
+
   it("drops the URL-encoded file name slug and share token on a Figma URL", () => {
     const input =
       "https://www.figma.com/design/abcXYZ123/%E3%83%86%E3%82%B9%E3%83%88%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB?node-id=1-2&t=someToken-1";

@@ -21,6 +21,8 @@ URLの変換はすべて「ルール」で表現されます。組み込みル�
 | `builtin.youtube.watch` | YouTube | `v`/`t`/`list`以外のパラメータを削除 |
 | `builtin.youtube.playlist` | YouTube | 再生リストURLから `list` 以外のパラメータを削除 |
 | `builtin.youtube.shorten` | YouTube | `youtube.com/watch?v=<id>` を `youtu.be/<id>` に短縮。**このルールを無効にすると `youtube.com` 形式で出力されます** |
+| `builtin.meet.code` | Google Meet | 会議URL(`meet.google.com/xxx-yyyy-zzz`)から `authuser`・`hs`・`pli` 等のパラメータを全削除 |
+| `builtin.meet.lookup` | Google Meet | カレンダー由来の `lookup/<エイリアス>` URLからクエリパラメータを全削除 |
 | `builtin.figma.slug` | Figma / FigJam | ファイル/ボード名スラッグと共有トークン(`t`)を除去し `node-id` を保持 |
 | `builtin.figma.share-token` | Figma / FigJam | 上記に該当しないFigma URLから `node-id` 以外のパラメータを除去 |
 | `builtin.generic.tracking` | (全サイト) | `utm_*`・`gclid`・`fbclid`などの汎用トラッキングパラメータを除去 |

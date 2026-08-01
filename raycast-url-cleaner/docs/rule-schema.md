@@ -204,6 +204,8 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
 | `builtin.youtube.watch` | `src/rules/youtube.ts` | `v`/`t`/`list` 以外のパラメータを削除 |
 | `builtin.youtube.playlist` | `src/rules/youtube.ts` | 再生リストURLから `list` 以外を削除 |
 | `builtin.youtube.shorten` | `src/rules/youtube.ts` | `youtube.com/watch?v=<id>` を `youtu.be/<id>` に短縮(`global`) |
+| `builtin.meet.code` | `src/rules/meet.ts` | 会議URL(`xxx-yyyy-zzz`)のクエリを全削除 |
+| `builtin.meet.lookup` | `src/rules/meet.ts` | `lookup/<エイリアス>` URLのクエリを全削除 |
 | `builtin.figma.slug` | `src/rules/figma.ts` | ファイル/ボード名スラッグと共有トークンを除去 |
 | `builtin.figma.share-token` | `src/rules/figma.ts` | 上記に当てはまらないFigma URLから `node-id` 以外を除去 |
 | `builtin.generic.tracking` | `src/rules/generic.ts` | `utm_*`・`gclid`・`fbclid` などを全URLから除去 |
