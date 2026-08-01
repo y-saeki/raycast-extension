@@ -6,7 +6,9 @@
 
 ## 必須: Figmaの`t`パラメータ除去がリンクの有効性を壊さないか
 
-- [ ] 実際のFigmaファイルの共有リンク(`node-id`と`t`付き)をコピー → コマンド実行 → 結果のリンクをブラウザで開いて、正しいファイル/ノードが開けることを確認する
+- [ ] 実際のFigmaファイルの共有URL(`node-id`と`t`付き)をコピー → コマンド実行 → 結果のURLをブラウザで開いて、正しいファイル/ノードが開けることを確認する
+- [ ] Dev Modeで開いた状態のURL(`m=dev`付き)をコピー → コマンド実行 → 結果のURLがDev Modeで開くことを確認する
+- [ ] プロトタイプ再生URL(`/proto/`、`starting-point-node-id`や`scaling`付き)をコピー → コマンド実行 → 同じ開始位置・表示スケールで再生されることを確認する
 
 `t`(共有トークン)がアクセスに必須なケースがあれば、`src/rules/figma.ts`のFigmaルールを見直す必要があります。
 
@@ -20,7 +22,11 @@
 | 5 | `youtube.com/watch?v=xxxx&si=...&t=42s` | `https://youtu.be/xxxx?t=42s` に短縮される | [ ] |
 | 5-1 | Google Meetの会議URL(`meet.google.com/xxx-yyyy-zzz?authuser=0&hs=122`) | クエリが全部消えて `https://meet.google.com/xxx-yyyy-zzz` だけになり、そのURLで実際に会議に参加できる | [ ] |
 | 5-2 | Googleカレンダーの予定から取得した `meet.google.com/lookup/xxxx?authuser=1` | クエリが全部消えて `lookup/xxxx` のパスは残り、そのURLで会議に参加できる | [ ] |
-| 6 | FigJamボードのリンク(`node-id`+`t`付き) | `node-id`は残り`t`が消える | [ ] |
+| 6 | FigJamボードのURL(`node-id`+`t`付き) | `node-id`は残り`t`が消える | [ ] |
+| 6a | Dev ModeのFigma URL(`node-id`+`m=dev`+`t`付き) | `node-id`と`m=dev`が残り`t`が消える | [ ] |
+| 6b | プロトタイプ再生URL(`/proto/`、`page-id`・`starting-point-node-id`・`scaling`+`t`付き) | 名前スラッグと`t`だけが消え、再生用パラメータは残る | [ ] |
+| 6c | Figma SlidesのURL(`/slides/`または`/deck/`) | 名前スラッグと`t`が消え、`node-id`は残る | [ ] |
+| 6d | Figmaのファイル以外のページ(例: `https://www.figma.com/pricing`や3階層のマーケティングページ) | パスは一切変わらない(クエリの整理だけ) | [ ] |
 
 ## YouTube(2段構成の確認)
 

@@ -206,8 +206,8 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
 | `builtin.youtube.shorten` | `src/rules/youtube.ts` | `youtube.com/watch?v=<id>` を `youtu.be/<id>` に短縮(`global`) |
 | `builtin.meet.code` | `src/rules/meet.ts` | 会議URL(`xxx-yyyy-zzz`)のクエリを全削除 |
 | `builtin.meet.lookup` | `src/rules/meet.ts` | `lookup/<エイリアス>` URLのクエリを全削除 |
-| `builtin.figma.slug` | `src/rules/figma.ts` | ファイル/ボード名スラッグと共有トークンを除去 |
-| `builtin.figma.share-token` | `src/rules/figma.ts` | 上記に当てはまらないFigma URLから `node-id` 以外を除去 |
+| `builtin.figma.slug` | `src/rules/figma.ts` | ファイル名スラッグと共有トークンを除去(`node-id`・`m`・`ready-for-dev`・`version-id`・プロトタイプ再生用パラメータは保持)。`/design/`・`/proto/`・`/board/`・`/slides/`・`/deck/`・`/site/`・`/buzz/`・`/make/`・`/file/` が対象 |
+| `builtin.figma.share-token` | `src/rules/figma.ts` | 上記に当てはまらないFigma URLから、同じ保持対象以外を除去(パスは変更しない) |
 | `builtin.generic.tracking` | `src/rules/generic.ts` | `utm_*`・`gclid`・`fbclid` などを全URLから除去 |
 
 組み込みルールは設定画面から有効/無効を切り替えられます(編集はできません)。挙動を変えたい場合は、組み込みルールを無効にしたうえで同じサイトを対象にした自分のルールを作ってください。
