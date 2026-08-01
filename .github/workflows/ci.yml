@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+# The workflow only reads the repository; nothing it runs needs write access or a token.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  url-cleaner:
+    name: url-cleaner
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: url-cleaner
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: url-cleaner/.nvmrc
+          cache: npm
+          cache-dependency-path: url-cleaner/package-lock.json
+
+      - run: npm ci
+
+      # `ray build` and `ray lint` talk to the Raycast app and API, so they stay a macOS-only step
+      # (see docs/store-release.md). What they wrap — ESLint, Prettier, types — runs here.
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: ESLint
+        run: npx eslint .
+
+      - name: Prettier
+        run: npx prettier --check .
+
+      - name: Test
+        run: npm test
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high

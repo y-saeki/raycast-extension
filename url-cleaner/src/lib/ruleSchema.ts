@@ -15,6 +15,15 @@ const RULE_KEYS = ["id", "name", "description", "stage", "match", "actions"];
 const MATCH_KEYS = ["hosts", "hostPattern", "pathPattern", "hasParams"];
 const ACTION_KEYS = ["setHost", "setPath", "queryMode", "queryParams", "setParams"];
 
+/**
+ * Patterns are compiled and run against every URL the user cleans, so a pasted rule is untrusted
+ * input on a hot path. Catastrophic backtracking needs room to nest quantifiers; capping the source
+ * length keeps a hand-written pattern comfortable while cutting off the crafted ones. The same
+ * reasoning caps the size of an imported payload.
+ */
+const MAX_PATTERN_LENGTH = 500;
+const MAX_RULES = 200;
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -28,6 +37,10 @@ function unknownKeys(record: Record<string, unknown>, allowed: string[]): string
 }
 
 function checkPattern(pattern: string, field: string, errors: string[]): void {
+  if (pattern.length > MAX_PATTERN_LENGTH) {
+    errors.push(`${field}: must be at most ${MAX_PATTERN_LENGTH} characters`);
+    return;
+  }
   try {
     new RegExp(pattern, "i");
   } catch (error) {
@@ -207,6 +220,10 @@ export function parseRule(input: unknown, options: ParseRuleOptions = {}): Parse
 export function parseRules(input: unknown, options: ParseRuleOptions = {}): ParseResult<UrlRule[]> {
   if (!Array.isArray(input)) {
     return { ok: false, errors: ["expected an array of rules"] };
+  }
+
+  if (input.length > MAX_RULES) {
+    return { ok: false, errors: [`too many rules: ${input.length} given, at most ${MAX_RULES} are accepted`] };
   }
 
   const errors: string[] = [];

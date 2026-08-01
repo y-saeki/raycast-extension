@@ -13,6 +13,7 @@ import {
 } from "@raycast/api";
 import { useCallback, useEffect, useState } from "react";
 import { RuleForm } from "./components/RuleForm";
+import { formatImportConfirmation } from "./lib/importSummary";
 import { parseRulesJson } from "./lib/ruleSchema";
 import {
   deleteUserRule,
@@ -109,6 +110,13 @@ export default function Command() {
       });
       return;
     }
+
+    const confirmed = await confirmAlert({
+      title: `Import ${parsed.value.length} rule(s)?`,
+      message: formatImportConfirmation(parsed.value),
+      primaryAction: { title: "Import" },
+    });
+    if (!confirmed) return;
 
     const { added, replaced } = await importUserRules(parsed.value);
     await reload();

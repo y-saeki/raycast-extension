@@ -84,6 +84,17 @@ describe("parseRule", () => {
   it("rejects setParams whose values are not strings", () => {
     expect(errorsOf({ ...validRule, actions: { setParams: { v: 1 } } }).join()).toContain("actions.setParams");
   });
+
+  it("rejects a pattern long enough to hide catastrophic backtracking", () => {
+    const pattern = `/${"(a+)+".repeat(120)}`;
+    expect(errorsOf({ ...validRule, match: { pathPattern: pattern } }).join()).toContain(
+      "match.pathPattern: must be at most 500 characters",
+    );
+  });
+
+  it("accepts a pattern of a length a person would actually write", () => {
+    expect(parseRule({ ...validRule, match: { pathPattern: `/${"a".repeat(400)}` } }).ok).toBe(true);
+  });
 });
 
 describe("parseRules", () => {
@@ -101,6 +112,13 @@ describe("parseRules", () => {
 
   it("rejects anything that is not an array", () => {
     expect(parseRules(validRule).ok).toBe(false);
+  });
+
+  it("rejects an import large enough to be a denial-of-service payload", () => {
+    const rules = Array.from({ length: 201 }, (_, index) => ({ ...validRule, id: `user.example-${index}` }));
+    const result = parseRules(rules);
+    expect(result.ok).toBe(false);
+    if (!result.ok) expect(result.errors[0]).toContain("too many rules");
   });
 });
 
