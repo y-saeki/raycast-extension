@@ -19,6 +19,13 @@
 
 ## 開発
 
+Node.js 22.14以上が必要です([Raycast公式ドキュメント](https://developers.raycast.com/basics/getting-started))。`nvm`を使う場合は以下でリポジトリの`.nvmrc`に沿ったバージョンに切り替えられます。
+
+```sh
+nvm install
+nvm use
+```
+
 ```sh
 npm install
 npm run dev    # Raycast開発モードで起動
