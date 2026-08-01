@@ -7,6 +7,7 @@ import type { RuleActions, UrlRule } from "../rules/types";
 export type PathCaptures = string[];
 
 const CAPTURE_REFERENCE = /\$(\d+)/g;
+const PARAM_REFERENCE = /\$\{([^}]*)\}/g;
 
 /** Compiles a user-supplied pattern, returning undefined when it is not a valid regular expression. */
 function compilePattern(pattern: string): RegExp | undefined {
@@ -22,9 +23,14 @@ function hostnameIs(hostname: string, base: string): boolean {
   return hostname === normalized || hostname.endsWith(`.${normalized}`);
 }
 
-/** Replaces `$1`, `$2`, ... with the corresponding path capture, leaving unmatched references as-is. */
-function interpolate(template: string, captures: PathCaptures): string {
-  return template.replace(CAPTURE_REFERENCE, (whole, index: string) => captures[Number(index)] ?? whole);
+/**
+ * Replaces `${name}` with the value of the query parameter `name`, and `$1`, `$2`, ... with the
+ * corresponding path capture. References that resolve to nothing are left as-is.
+ */
+function interpolate(template: string, captures: PathCaptures, params: URLSearchParams): string {
+  return template
+    .replace(PARAM_REFERENCE, (whole, name: string) => params.get(name) ?? whole)
+    .replace(CAPTURE_REFERENCE, (whole, index: string) => captures[Number(index)] ?? whole);
 }
 
 /**
@@ -33,7 +39,7 @@ function interpolate(template: string, captures: PathCaptures): string {
  * A rule with an invalid regular expression never matches.
  */
 export function matchRule(rule: UrlRule, url: URL): PathCaptures | undefined {
-  const { hosts, hostPattern, pathPattern } = rule.match;
+  const { hosts, hostPattern, pathPattern, hasParams } = rule.match;
 
   if (hosts && hosts.length > 0 && !hosts.some((host) => hostnameIs(url.hostname, host))) {
     return undefined;
@@ -42,6 +48,10 @@ export function matchRule(rule: UrlRule, url: URL): PathCaptures | undefined {
   if (hostPattern) {
     const regex = compilePattern(hostPattern);
     if (!regex || !regex.test(url.hostname)) return undefined;
+  }
+
+  if (hasParams && !hasParams.every((param) => url.searchParams.has(param))) {
+    return undefined;
   }
 
   if (pathPattern) {
@@ -58,7 +68,7 @@ export function matchRule(rule: UrlRule, url: URL): PathCaptures | undefined {
  * Leaves `url.search` completely untouched when the actions would not change any parameter,
  * so that URLs we do not need to modify keep their original encoding.
  */
-function applyQueryActions(url: URL, actions: RuleActions, captures: PathCaptures): void {
+function applyQueryActions(url: URL, actions: RuleActions, captures: PathCaptures, params: URLSearchParams): void {
   const mode = actions.queryMode ?? "keepAll";
   const listed = new Set(actions.queryParams ?? []);
   const setParams = actions.setParams ?? {};
@@ -78,7 +88,7 @@ function applyQueryActions(url: URL, actions: RuleActions, captures: PathCapture
   // `setParams` is written first so explicitly set parameters lead the resulting query string.
   const rebuilt = new URLSearchParams();
   for (const [key, template] of Object.entries(setParams)) {
-    rebuilt.set(key, interpolate(template, captures));
+    rebuilt.set(key, interpolate(template, captures, params));
   }
   for (const [key, value] of kept) {
     if (!rebuilt.has(key)) rebuilt.append(key, value);
@@ -91,14 +101,18 @@ function applyQueryActions(url: URL, actions: RuleActions, captures: PathCapture
 export function applyRule(rule: UrlRule, url: URL, captures: PathCaptures): void {
   const { actions } = rule;
 
+  // Snapshot the query before any action runs, so `${name}` references always see the incoming URL
+  // even when the same rule goes on to drop the parameter it read.
+  const params = new URLSearchParams(url.search);
+
   if (actions.setHost) {
-    url.hostname = interpolate(actions.setHost, captures);
+    url.hostname = interpolate(actions.setHost, captures, params);
   }
   if (actions.setPath) {
-    url.pathname = interpolate(actions.setPath, captures);
+    url.pathname = interpolate(actions.setPath, captures, params);
   }
   if (actions.queryMode !== undefined || actions.setParams !== undefined) {
-    applyQueryActions(url, actions, captures);
+    applyQueryActions(url, actions, captures, params);
   }
 }
 
