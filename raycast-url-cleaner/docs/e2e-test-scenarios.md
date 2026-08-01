@@ -6,7 +6,9 @@
 
 ## 必須: Figmaの`t`パラメータ除去がリンクの有効性を壊さないか
 
-- [ ] 実際のFigmaファイルの共有リンク(`node-id`と`t`付き)をコピー → コマンド実行 → 結果のリンクをブラウザで開いて、正しいファイル/ノードが開けることを確認する
+- [ ] 実際のFigmaファイルの共有URL(`node-id`と`t`付き)をコピー → コマンド実行 → 結果のURLをブラウザで開いて、正しいファイル/ノードが開けることを確認する
+- [ ] Dev Modeで開いた状態のURL(`m=dev`付き)をコピー → コマンド実行 → 結果のURLがDev Modeで開くことを確認する
+- [ ] プロトタイプ再生URL(`/proto/`、`starting-point-node-id`や`scaling`付き)をコピー → コマンド実行 → 同じ開始位置・表示スケールで再生されることを確認する
 
 `t`(共有トークン)がアクセスに必須なケースがあれば、`src/rules/figma.ts`のFigmaルールを見直す必要があります。
 
@@ -18,7 +20,9 @@
 | 3 | Xの投稿URL(`?s=20&t=...`付き) | クエリが全部消えて `.../status/<id>` だけになる | [ ] |
 | 4 | `youtu.be/xxxx?si=...` 形式 | `https://www.youtube.com/watch?v=xxxx` に展開される | [ ] |
 | 5 | `youtube.com/watch?v=xxxx&si=...&t=42s` | `v`と`t`だけ残り`si`等が消える | [ ] |
-| 6 | FigJamボードのリンク(`node-id`+`t`付き) | `node-id`は残り`t`が消える | [ ] |
+| 6 | FigJamボードのURL(`node-id`+`t`付き) | `node-id`は残り`t`が消える | [ ] |
+| 6a | Dev ModeのFigma URL(`node-id`+`m=dev`+`t`付き) | `node-id`と`m=dev`が残り`t`が消える | [ ] |
+| 6b | プロトタイプ再生URL(`/proto/`、`page-id`・`starting-point-node-id`・`scaling`+`t`付き) | 名前スラッグと`t`だけが消え、再生用パラメータは残る | [ ] |
 
 ## 汎用パラメータ除去(サイト固有ルール未対応のドメイン)
 

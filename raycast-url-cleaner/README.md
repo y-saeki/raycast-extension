@@ -17,8 +17,8 @@ URLの変換はすべて「ルール」で表現されます。組み込みル�
 | `builtin.x.status` | X (Twitter) | ステータスURLのクエリパラメータを全削除 |
 | `builtin.youtube.short` | YouTube | `youtu.be/<id>` を `youtube.com/watch?v=<id>` に展開(`t`は保持) |
 | `builtin.youtube.watch` | YouTube | `v`/`t`以外のパラメータを削除 |
-| `builtin.figma.slug` | Figma / FigJam | ファイル/ボード名スラッグと共有トークン(`t`)を除去し `node-id` を保持 |
-| `builtin.figma.share-token` | Figma / FigJam | 上記に該当しないFigma URLから `node-id` 以外のパラメータを除去 |
+| `builtin.figma.slug` | Figma / FigJam | ファイル/ボード/プロトタイプ名スラッグと共有トークン(`t`)を除去し、`node-id`・`m`(Dev Mode等)・`ready-for-dev`・`version-id`・プロトタイプ再生用パラメータを保持 |
+| `builtin.figma.share-token` | Figma / FigJam | 上記に該当しないFigma URLから、上と同じ保持対象以外のパラメータを除去 |
 | `builtin.generic.tracking` | (全サイト) | `utm_*`・`gclid`・`fbclid`などの汎用トラッキングパラメータを除去 |
 
 サイト固有ルールは**最初にマッチした1つだけ**が適用され、その後に全サイト対象のルールが適用されます。ユーザーのルールは組み込みルールより先に評価されるため、同じサイトのルールを自分で書けば挙動を上書きできます。

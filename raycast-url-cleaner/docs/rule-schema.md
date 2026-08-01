@@ -166,8 +166,8 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
 | `builtin.x.status` | `src/rules/x.ts` | 投稿URLのクエリを全削除 |
 | `builtin.youtube.short` | `src/rules/youtube.ts` | `youtu.be/<id>` を `youtube.com/watch?v=<id>` に展開 |
 | `builtin.youtube.watch` | `src/rules/youtube.ts` | `v`/`t` 以外のパラメータを削除 |
-| `builtin.figma.slug` | `src/rules/figma.ts` | ファイル/ボード名スラッグと共有トークンを除去 |
-| `builtin.figma.share-token` | `src/rules/figma.ts` | 上記に当てはまらないFigma URLから `node-id` 以外を除去 |
+| `builtin.figma.slug` | `src/rules/figma.ts` | ファイル/ボード/プロトタイプ名スラッグと共有トークンを除去(`node-id`・`m`・`ready-for-dev`・`version-id`・プロトタイプ再生用パラメータは保持) |
+| `builtin.figma.share-token` | `src/rules/figma.ts` | 上記に当てはまらないFigma URLから、同じ保持対象以外を除去 |
 | `builtin.generic.tracking` | `src/rules/generic.ts` | `utm_*`・`gclid`・`fbclid` などを全URLから除去 |
 
 組み込みルールは設定画面から有効/無効を切り替えられます(編集はできません)。挙動を変えたい場合は、組み込みルールを無効にしたうえで同じサイトを対象にした自分のルールを作ってください。

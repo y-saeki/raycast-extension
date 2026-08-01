@@ -40,6 +40,29 @@ describe("cleanUrl", () => {
     expect(cleanUrl(input)).toBe("https://www.figma.com/design/abcXYZ123/?node-id=1-2");
   });
 
+  it("keeps the Dev Mode parameter on a Figma URL", () => {
+    const input = "https://www.figma.com/design/abcXYZ123/SomeFile?node-id=1-2&m=dev&t=someToken-1";
+    expect(cleanUrl(input)).toBe("https://www.figma.com/design/abcXYZ123/?node-id=1-2&m=dev");
+  });
+
+  it("keeps the ready-for-dev parameter on a Figma URL", () => {
+    const input = "https://www.figma.com/design/abcXYZ123/SomeFile?node-id=1-2&ready-for-dev=1&t=someToken-1";
+    expect(cleanUrl(input)).toBe("https://www.figma.com/design/abcXYZ123/?node-id=1-2&ready-for-dev=1");
+  });
+
+  it("keeps the pinned version on a Figma URL", () => {
+    const input = "https://www.figma.com/design/abcXYZ123/SomeFile?node-id=1-2&version-id=987654321&t=someToken-1";
+    expect(cleanUrl(input)).toBe("https://www.figma.com/design/abcXYZ123/?node-id=1-2&version-id=987654321");
+  });
+
+  it("keeps the prototype playback parameters on a Figma prototype URL", () => {
+    const input =
+      "https://www.figma.com/proto/abcXYZ123/SomeFile?page-id=0%3A1&node-id=1-2&starting-point-node-id=1%3A2&scaling=scale-down&content-scaling=fixed&t=someToken-1";
+    expect(cleanUrl(input)).toBe(
+      "https://www.figma.com/proto/abcXYZ123/?page-id=0%3A1&node-id=1-2&starting-point-node-id=1%3A2&scaling=scale-down&content-scaling=fixed",
+    );
+  });
+
   it("strips generic utm params from an unrecognized domain", () => {
     const input = "https://example.com/blog/post?utm_source=newsletter&utm_medium=email&id=42";
     expect(cleanUrl(input)).toBe("https://example.com/blog/post?id=42");
