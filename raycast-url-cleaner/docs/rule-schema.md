@@ -15,7 +15,8 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
   "match": {
     "hosts": ["example.com"],
     "hostPattern": "",
-    "pathPattern": "^\\/articles\\/(\\d+)"
+    "pathPattern": "^\\/articles\\/(\\d+)",
+    "hasParams": []
   },
   "actions": {
     "setHost": "",
@@ -54,18 +55,30 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
 | `hosts` | ホスト名の配列。サブドメインも含めて一致します(`example.com` は `www.example.com` にも一致、`notexample.com` には一致しません) |
 | `hostPattern` | ホスト名に対する正規表現(文字列) |
 | `pathPattern` | パスに対する正規表現(文字列)。キャプチャグループは `actions` から `$1`, `$2`, ... で参照できます |
+| `hasParams` | ここに挙げたクエリパラメータが**すべて存在する**ときだけ適用されます。値は `actions` から `${名前}` で参照できます |
 
 正規表現は**常に大文字小文字を区別せず**照合されます。JSONの文字列なのでバックスラッシュは二重に書く必要があります(`^\\/watch$`)。正規表現として壊れているルールは、他のルールを巻き込まずにスキップされます。
+
+`site` ルールに必要な「条件を1つ以上」には `hasParams` は数えません(単独ではすべてのホストにマッチしてしまうため)。`hosts`・`hostPattern`・`pathPattern` のいずれかと組み合わせて使ってください。
 
 ## `actions`: URLへの変更
 
 | フィールド | 内容 |
 |---|---|
-| `setHost` | ホスト名を置き換えます。`$1` 参照可 |
-| `setPath` | パスを置き換えます。`$1` 参照可 |
+| `setHost` | ホスト名を置き換えます。参照可 |
+| `setPath` | パスを置き換えます。参照可 |
 | `queryMode` | クエリ文字列の扱い(下表)。既定は `keepAll` |
 | `queryParams` | `keepOnly` / `remove` で対象にするパラメータ名の配列 |
-| `setParams` | パラメータを明示的にセットします。値は `$1` 参照可。**クエリ文字列の先頭に置かれます** |
+| `setParams` | パラメータを明示的にセットします。値は参照可。**クエリ文字列の先頭に置かれます** |
+
+### 値の中で使える参照
+
+| 記法 | 展開されるもの |
+|---|---|
+| `$1`, `$2`, ... | `match.pathPattern` のキャプチャグループ |
+| `${名前}` | クエリパラメータ `名前` の値 |
+
+参照は元のURLに対して解決されるため、同じルールが後からそのパラメータを削除しても問題ありません(`setPath: "/${v}"` と `queryMode: "keepOnly"` の組み合わせでクエリの `v` をパスへ移せます)。解決できない参照は書いたままの文字列として残ります。
 
 ### `queryMode`
 
@@ -142,6 +155,27 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
 ]
 ```
 
+### URLを短縮形にする
+
+逆に、クエリパラメータをパスへ移す例です(組み込みの `builtin.youtube.shorten` と同じ考え方)。`hasParams` があるので `v` を持たないURLには適用されません。
+
+```json
+[
+  {
+    "id": "user.example-shorten",
+    "name": "Example: 短縮形に変換",
+    "stage": "global",
+    "match": { "hosts": ["www.example.com"], "pathPattern": "^\\/watch$", "hasParams": ["v"] },
+    "actions": {
+      "setHost": "exmpl.co",
+      "setPath": "/${v}",
+      "queryMode": "keepOnly",
+      "queryParams": ["t"]
+    }
+  }
+]
+```
+
 ### 独自のトラッキングパラメータを全サイトから消す
 
 ```json
@@ -164,8 +198,12 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
 |---|---|---|
 | `builtin.amazon.product` | `src/rules/amazon.ts` | 商品URLを `/dp/<ASIN>` に短縮 |
 | `builtin.x.status` | `src/rules/x.ts` | 投稿URLのクエリを全削除 |
-| `builtin.youtube.short` | `src/rules/youtube.ts` | `youtu.be/<id>` を `youtube.com/watch?v=<id>` に展開 |
-| `builtin.youtube.watch` | `src/rules/youtube.ts` | `v`/`t` 以外のパラメータを削除 |
+| `builtin.youtube.short` | `src/rules/youtube.ts` | `youtu.be/<id>` を正規化 |
+| `builtin.youtube.embed-playlist` | `src/rules/youtube.ts` | `embed/videoseries?list=<id>` を再生リストページに変換 |
+| `builtin.youtube.video-path` | `src/rules/youtube.ts` | Shorts・Live・埋め込みを動画URLに変換 |
+| `builtin.youtube.watch` | `src/rules/youtube.ts` | `v`/`t`/`list` 以外のパラメータを削除 |
+| `builtin.youtube.playlist` | `src/rules/youtube.ts` | 再生リストURLから `list` 以外を削除 |
+| `builtin.youtube.shorten` | `src/rules/youtube.ts` | `youtube.com/watch?v=<id>` を `youtu.be/<id>` に短縮(`global`) |
 | `builtin.figma.slug` | `src/rules/figma.ts` | ファイル名スラッグと共有トークンを除去(`node-id`・`m`・`ready-for-dev`・`version-id`・プロトタイプ再生用パラメータは保持)。`/design/`・`/proto/`・`/board/`・`/slides/`・`/deck/`・`/site/`・`/buzz/`・`/make/`・`/file/` が対象 |
 | `builtin.figma.share-token` | `src/rules/figma.ts` | 上記に当てはまらないFigma URLから、同じ保持対象以外を除去(パスは変更しない) |
 | `builtin.generic.tracking` | `src/rules/generic.ts` | `utm_*`・`gclid`・`fbclid` などを全URLから除去 |

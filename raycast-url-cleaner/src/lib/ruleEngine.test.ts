@@ -34,6 +34,21 @@ describe("matchRule", () => {
     expect(matchRule(r, new URL("https://example.com/abc"))).toBeUndefined();
   });
 
+  it("requires every parameter listed in hasParams to be present", () => {
+    const r = rule({
+      match: { hosts: ["example.com"], hasParams: ["v", "t"] },
+      actions: { queryMode: "removeAll" },
+    });
+    expect(matchRule(r, new URL("https://example.com/p?v=1&t=2&x=3"))).toBeDefined();
+    expect(matchRule(r, new URL("https://example.com/p?v=1"))).toBeUndefined();
+    expect(matchRule(r, new URL("https://example.com/p"))).toBeUndefined();
+  });
+
+  it("treats an empty hasParams value as present", () => {
+    const r = rule({ match: { hasParams: ["v"] }, actions: { queryMode: "removeAll" } });
+    expect(matchRule(r, new URL("https://example.com/p?v="))).toBeDefined();
+  });
+
   it("matches every URL when the rule declares no condition", () => {
     const r = rule({ match: {}, actions: { queryMode: "removeAll" } });
     expect(matchRule(r, new URL("https://anything.example/x"))).toEqual([]);
@@ -104,6 +119,27 @@ describe("actions", () => {
   it("leaves an unmatched capture reference as written", () => {
     const r = rule({ match: { hosts: ["example.com"] }, actions: { setPath: "/x/$3" } });
     expect(cleanUrl("https://example.com/p", [r])).toBe("https://example.com/x/$3");
+  });
+
+  it("interpolates a query parameter into setPath, even when the same rule drops it", () => {
+    const r = rule({
+      match: { hosts: ["example.com"], hasParams: ["v"] },
+      actions: { setPath: "/${v}", queryMode: "keepOnly", queryParams: ["t"] },
+    });
+    expect(cleanUrl("https://example.com/watch?v=abc&t=42&si=x", [r])).toBe("https://example.com/abc?t=42");
+  });
+
+  it("interpolates a query parameter into setHost", () => {
+    const r = rule({
+      match: { hosts: ["example.com"], hasParams: ["sub"] },
+      actions: { setHost: "${sub}.example.com", queryMode: "removeAll" },
+    });
+    expect(cleanUrl("https://example.com/p?sub=docs", [r])).toBe("https://docs.example.com/p");
+  });
+
+  it("leaves a reference to a missing query parameter as written", () => {
+    const r = rule({ match: { hosts: ["example.com"] }, actions: { setPath: "/x/${missing}" } });
+    expect(cleanUrl("https://example.com/p", [r])).toBe("https://example.com/x/$%7Bmissing%7D");
   });
 });
 

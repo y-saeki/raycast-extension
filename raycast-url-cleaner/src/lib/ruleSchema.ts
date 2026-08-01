@@ -12,7 +12,7 @@ import {
 export type ParseResult<T> = { ok: true; value: T } | { ok: false; errors: string[] };
 
 const RULE_KEYS = ["id", "name", "description", "stage", "match", "actions"];
-const MATCH_KEYS = ["hosts", "hostPattern", "pathPattern"];
+const MATCH_KEYS = ["hosts", "hostPattern", "pathPattern", "hasParams"];
 const ACTION_KEYS = ["setHost", "setPath", "queryMode", "queryParams", "setParams"];
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -68,8 +68,18 @@ function parseMatch(input: unknown, stage: RuleStage, errors: string[]): RuleMat
     match[key] = value;
   }
 
+  if (input.hasParams !== undefined) {
+    if (!isStringArray(input.hasParams)) {
+      errors.push("match.hasParams: must be an array of strings");
+    } else {
+      const params = input.hasParams.map((param) => param.trim()).filter(Boolean);
+      if (params.length > 0) match.hasParams = params;
+    }
+  }
+
   // A `global` rule is allowed to match every URL — that is what makes it global. A `site` rule
-  // without any condition would match everything too, shadowing every rule after it.
+  // without any condition would match everything too, shadowing every rule after it. `hasParams`
+  // does not count here: on its own it would still match every host.
   if (stage === "site" && !match.hosts && !match.hostPattern && !match.pathPattern) {
     errors.push("match: needs at least one of hosts, hostPattern or pathPattern");
   }

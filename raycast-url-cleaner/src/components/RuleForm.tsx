@@ -11,6 +11,7 @@ export interface RuleFormValues {
   hosts: string;
   hostPattern: string;
   pathPattern: string;
+  hasParams: string;
   setHost: string;
   setPath: string;
   queryMode: QueryMode;
@@ -25,6 +26,7 @@ const EMPTY_VALUES: RuleFormValues = {
   hosts: "",
   hostPattern: "",
   pathPattern: "",
+  hasParams: "",
   setHost: "",
   setPath: "",
   queryMode: "keepAll",
@@ -47,6 +49,7 @@ const ERROR_FIELDS: [string, keyof RuleFormValues][] = [
   ["match.hosts", "hosts"],
   ["match.hostPattern", "hostPattern"],
   ["match.pathPattern", "pathPattern"],
+  ["match.hasParams", "hasParams"],
   ["match:", "hosts"],
   ["actions.setHost", "setHost"],
   ["actions.setPath", "setPath"],
@@ -94,6 +97,7 @@ export function ruleToFormValues(rule: UrlRule): RuleFormValues {
     hosts: joinList(rule.match.hosts),
     hostPattern: rule.match.hostPattern ?? "",
     pathPattern: rule.match.pathPattern ?? "",
+    hasParams: joinList(rule.match.hasParams),
     setHost: rule.actions.setHost ?? "",
     setPath: rule.actions.setPath ?? "",
     queryMode: rule.actions.queryMode ?? "keepAll",
@@ -121,6 +125,7 @@ export function formValuesToRule(
       hosts: splitList(values.hosts),
       hostPattern: values.hostPattern,
       pathPattern: values.pathPattern,
+      hasParams: splitList(values.hasParams),
     },
     actions: {
       setHost: values.setHost,
@@ -242,11 +247,19 @@ export function RuleForm({ rule, existingIds, onSave }: RuleFormProps) {
         error={errors.pathPattern}
         onChange={(value) => update("pathPattern", value)}
       />
+      <Form.TextField
+        id="hasParams"
+        title="Has Params"
+        placeholder="Optional. Query parameters that must all be present, e.g. v"
+        value={values.hasParams}
+        error={errors.hasParams}
+        onChange={(value) => update("hasParams", value)}
+      />
 
       <Form.Separator />
       <Form.Description
         title="Actions"
-        text="What happens when the rule matches. Capture groups from the path pattern are available as $1, $2, ..."
+        text="What happens when the rule matches. Capture groups from the path pattern are available as $1, $2, ..., and the value of a query parameter as ${name}."
       />
       <Form.TextField
         id="setHost"

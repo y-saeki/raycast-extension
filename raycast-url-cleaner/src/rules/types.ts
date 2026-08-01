@@ -16,6 +16,11 @@ export interface RuleMatch {
    * Capture groups are available to the actions as `$1`, `$2`, ...
    */
   pathPattern?: string;
+  /**
+   * Query parameter names that must all be present. Their values are available to the actions
+   * as `${name}`. Only meaningful together with a host or path condition on `site` rules.
+   */
+  hasParams?: string[];
 }
 
 /**
@@ -29,18 +34,24 @@ export type QueryMode = "keepAll" | "removeAll" | "keepOnly" | "remove";
 
 export const QUERY_MODES: QueryMode[] = ["keepAll", "removeAll", "keepOnly", "remove"];
 
-/** What a rule does to a URL once it matches. */
+/**
+ * What a rule does to a URL once it matches.
+ *
+ * Values marked as supporting references may contain `$1`, `$2`, ... for capture groups from
+ * `match.pathPattern`, and `${name}` for the value of the query parameter `name`. References that
+ * resolve to nothing are left in the value as written.
+ */
 export interface RuleActions {
-  /** Replaces the hostname. Supports `$1` capture references from `match.pathPattern`. */
+  /** Replaces the hostname. Supports `$1` and `${name}` references. */
   setHost?: string;
-  /** Replaces the path. Supports `$1` capture references from `match.pathPattern`. */
+  /** Replaces the path. Supports `$1` and `${name}` references. */
   setPath?: string;
   /** Defaults to `keepAll`. */
   queryMode?: QueryMode;
   /** Parameter names used by the `keepOnly` and `remove` query modes. */
   queryParams?: string[];
   /**
-   * Parameters set explicitly, e.g. `{ v: "$1" }`. Values support `$1` capture references.
+   * Parameters set explicitly, e.g. `{ v: "$1" }`. Values support `$1` and `${name}` references.
    * These are written first, so they lead the resulting query string.
    */
   setParams?: Record<string, string>;
