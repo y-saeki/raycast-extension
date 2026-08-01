@@ -23,14 +23,21 @@ describe("cleanUrl", () => {
     expect(cleanUrl(input)).toBe("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
   });
 
-  it("keeps node-id but drops the share token on a Figma link", () => {
-    const input = "https://www.figma.com/design/abcXYZ123/My-File?node-id=1-2&t=someToken-1";
-    expect(cleanUrl(input)).toBe("https://www.figma.com/design/abcXYZ123/My-File?node-id=1-2");
+  it("drops the URL-encoded file name slug and share token on a Figma link", () => {
+    const input =
+      "https://www.figma.com/design/abcXYZ123/%E3%83%86%E3%82%B9%E3%83%88%E3%83%95%E3%82%A1%E3%82%A4%E3%83%AB?node-id=1-2&t=someToken-1";
+    expect(cleanUrl(input)).toBe("https://www.figma.com/design/abcXYZ123/?node-id=1-2");
   });
 
-  it("keeps node-id but drops the share token on a FigJam board link", () => {
-    const input = "https://www.figma.com/board/abcXYZ123/My-Board?node-id=1-2&t=someToken-1";
-    expect(cleanUrl(input)).toBe("https://www.figma.com/board/abcXYZ123/My-Board?node-id=1-2");
+  it("drops the URL-encoded board name slug and share token on a FigJam board link", () => {
+    const input =
+      "https://www.figma.com/board/6hPPMM8nyNLsjjgN14uoLv/%E3%81%BE%E3%81%AA%E3%81%B3K12-%E6%B1%BA%E6%B8%88%E5%9F%BA%E7%9B%A4-%E6%A8%99%E3%83%97%E3%83%AD%E7%94%A8%E8%B3%87%E6%96%99?node-id=971-8416";
+    expect(cleanUrl(input)).toBe("https://www.figma.com/board/6hPPMM8nyNLsjjgN14uoLv/?node-id=971-8416");
+  });
+
+  it("leaves a Figma link without a name slug untouched aside from query cleanup", () => {
+    const input = "https://www.figma.com/design/abcXYZ123/?node-id=1-2&t=someToken-1";
+    expect(cleanUrl(input)).toBe("https://www.figma.com/design/abcXYZ123/?node-id=1-2");
   });
 
   it("strips generic utm params from an unrecognized domain", () => {

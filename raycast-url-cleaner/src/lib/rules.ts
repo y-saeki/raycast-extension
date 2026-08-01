@@ -14,6 +14,8 @@ const AMAZON_ASIN_PATTERN = /\/(?:dp|gp\/product)\/([A-Z0-9]{10})/i;
 
 const YOUTUBE_ALLOWED_WATCH_PARAMS = new Set(["v", "t"]);
 
+const FIGMA_PATH_PATTERN = /^\/(file|design|board)\/([^/]+)\/[^/]*$/;
+
 export const rules: SiteRule[] = [
   {
     name: "Amazon",
@@ -61,6 +63,12 @@ export const rules: SiteRule[] = [
     name: "Figma / FigJam",
     match: (url) => hostnameIs(url.hostname, "figma.com"),
     transform: (url) => {
+      const pathMatch = url.pathname.match(FIGMA_PATH_PATTERN);
+      if (pathMatch) {
+        const [, kind, key] = pathMatch;
+        url.pathname = `/${kind}/${key}/`;
+      }
+
       const nodeId = url.searchParams.get("node-id");
       url.search = "";
       if (nodeId) url.searchParams.set("node-id", nodeId);
