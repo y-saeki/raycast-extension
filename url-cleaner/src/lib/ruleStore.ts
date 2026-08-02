@@ -186,4 +186,9 @@ export function createUserRuleId(name: string, existingIds: string[] = []): stri
   return id;
 }
 
+/** Builds the name a duplicated rule starts out with, before the user edits it. */
+export function duplicateRuleName(name: string): string {
+  return `${name} (Copy)`;
+}
+
 export { isBuiltinRuleId };

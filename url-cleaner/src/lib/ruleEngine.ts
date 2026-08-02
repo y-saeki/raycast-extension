@@ -126,7 +126,7 @@ export function applyRules(url: URL, rules: UrlRule[]): boolean {
   let matched = false;
 
   for (const rule of rules) {
-    if ((rule.stage ?? "site") !== "site") continue;
+    if ((rule.scope ?? "site") !== "site") continue;
     const captures = matchRule(rule, url);
     if (!captures) continue;
     applyRule(rule, url, captures);
@@ -135,7 +135,7 @@ export function applyRules(url: URL, rules: UrlRule[]): boolean {
   }
 
   for (const rule of rules) {
-    if (rule.stage !== "global") continue;
+    if (rule.scope !== "global") continue;
     const captures = matchRule(rule, url);
     if (!captures) continue;
     applyRule(rule, url, captures);

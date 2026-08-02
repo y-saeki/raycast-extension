@@ -90,7 +90,7 @@ export const youtubeRules: UrlRule[] = [
     id: "builtin.youtube.shorten",
     name: "YouTube: shorten to youtu.be",
     description: "Rewrites youtube.com/watch?v=<id> to youtu.be/<id>. Off by default; turn it on for short URLs.",
-    stage: "global",
+    scope: "global",
     match: {
       hostPattern: "^(?:www\\.|m\\.)?youtube\\.com$",
       pathPattern: "^\\/watch$",

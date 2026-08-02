@@ -161,11 +161,11 @@ describe("rule ordering", () => {
     expect(cleanUrl("https://example.com/p", [first, second])).toBe("https://example.com/first");
   });
 
-  it("applies every matching global rule after the site stage", () => {
+  it("applies every matching global rule after the site rules", () => {
     const globalRule = rule({
       id: "user.global",
       name: "Global",
-      stage: "global",
+      scope: "global",
       match: {},
       actions: { queryMode: "remove", queryParams: ["utm_source"] },
     });
@@ -178,7 +178,7 @@ describe("rule ordering", () => {
     const globalRule = rule({
       id: "user.global",
       name: "Global",
-      stage: "global",
+      scope: "global",
       match: {},
       actions: { queryMode: "remove", queryParams: ["utm_source"] },
     });

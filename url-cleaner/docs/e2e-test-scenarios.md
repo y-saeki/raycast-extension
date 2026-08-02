@@ -72,7 +72,7 @@
 
 | # | 内容 | 期待結果 | 確認 |
 |---|---|---|---|
-| 18 | コマンドを開く | 「Built-in Rules」に組み込みルール13件が全て有効(緑チェック)で並ぶ。「Your Rules」は空 | [ ] |
+| 18 | コマンドを開く | 「Built-in Rules」に組み込みルール13件が並び、`builtin.youtube.shorten` 以外は有効(緑チェック)、`builtin.youtube.shorten` だけ無効。「Your Rules」は空 | [ ] |
 | 19 | `builtin.amazon.product`(Amazon)を選んでEnterで無効化 → Amazon商品URLをコピーしてクリーン | `/dp/<ASIN>` への短縮が行われず、`utm_*`等の汎用パラメータ除去だけが効く | [ ] |
 | 20 | 上記ルールを再度有効化 → 同じURLをクリーン | シナリオ#2と同じ結果に戻る | [ ] |
 | 21 | `builtin.generic.tracking` を無効化 → `?utm_source=x` 付きURLをクリーン | `utm_source`が残る(HUDは「変更はありませんでした」) | [ ] |
@@ -86,6 +86,11 @@
 | 28 | 上記JSONをそのままコピーし直して `⌘⇧I` でインポート | 「0 added, 1 replaced」となり、ルールが重複しない | [ ] |
 | 29 | JSONでない文字列をコピーして `⌘⇧I` | エラーが表示され、既存のルールは壊れない | [ ] |
 | 30 | 自分のルールを `⌃X` で削除 | 確認ダイアログが出て、OKすると一覧から消える | [ ] |
-| 31 | 組み込みルールを選択した状態でアクションパネルを開く | Edit Rule / Delete Rule が表示されない(組み込みは編集不可) | [ ] |
-| 32 | 「Reset to Defaults」を実行 | 確認ダイアログの後、自分のルールが全削除され、組み込みルールが全て有効に戻る | [ ] |
+| 31 | 組み込みルールを選択した状態でアクションパネルを開く | Edit Rule / Delete Rule は表示されない(組み込みは編集不可)が、Duplicate Rule は表示される | [ ] |
+| 32 | 「Reset to Defaults」を実行 | 確認ダイアログの後、自分のルールが全削除され、組み込みルールがインストール直後の状態(`builtin.youtube.shorten` のみ無効、他は有効)に戻る | [ ] |
 | 33 | ルールを無効化・追加した状態でRaycastを再起動し、再度コマンドを開く | 有効/無効の状態と自分のルールが保持されている | [ ] |
+| 34 | `builtin.amazon.product` を選んで `⌘D` | 「Duplicate URL Rule」のフォームが開き、名前が `Amazon: product URL (Copy)`、Hosts・Path Pattern などが元のルールと同じ内容で埋まっている | [ ] |
+| 35 | 上記をそのまま保存 | 「Your Rules」に複製が追加され、組み込みの `builtin.amazon.product` も元のまま一覧に残る。Amazon商品URLをクリーンすると従来どおり短縮される | [ ] |
+| 36 | `builtin.generic.tracking`(global)を `⌘D` → Scope が `Global` のまま保存 | 条件なし(`match` 空)のまま保存でき、組み込み側を無効化しても複製したルールで `utm_*` が除去される | [ ] |
+| 37 | 自分のルールを `⌘D` して保存 | 元のルールと複製の両方が「Your Rules」に並ぶ(上書きされない)。`⌘⇧E` でエクスポートすると2件のIDが異なる | [ ] |
+| 38 | 複製フォームを開いた状態で名前を別のものに書き換えて保存 | 書き換えた名前で保存され、IDもその名前から作られる | [ ] |

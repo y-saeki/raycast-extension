@@ -11,7 +11,7 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
   "id": "user.example",
   "name": "Example: 参照元パラメータを除去",
   "description": "任意。設定画面に表示される説明",
-  "stage": "site",
+  "scope": "site",
   "match": {
     "hosts": ["example.com"],
     "hostPattern": "",
@@ -33,11 +33,11 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
 | `id` | ○ | 一意な識別子。有効/無効の記憶に使われます。`builtin.` で始まるIDは拡張機能に同梱されるルール用に予約されています。フォームから作った場合は `user.<名前のスラッグ>` が自動で付きます |
 | `name` | ○ | 設定画面に表示される名前 |
 | `description` | | 補足説明 |
-| `stage` | | `site`(既定) または `global`。下記参照 |
+| `scope` | | `site`(既定) または `global`。下記参照 |
 | `match` | ○ | ルールが適用される条件 |
 | `actions` | ○ | 適用されたときにURLへ加える変更 |
 
-## `stage`: ルールが動くタイミング
+## `scope`: ルールが効く範囲と動く順番
 
 | 値 | 挙動 |
 |---|---|
@@ -45,6 +45,8 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
 | `global` | サイトルールの後に、**マッチするものすべて**が適用されます。組み込みの「汎用トラッキングパラメータ」(`builtin.generic.tracking`)がこれにあたります |
 
 `site` ルールは `match` に条件を1つ以上書く必要があります(条件のないルールは以降のすべてのルールを覆い隠してしまうため)。`global` ルールは `match` を空(`{}`)にして全URLを対象にできます。
+
+`scope` は設定画面のフォームの「Scope」欄からも選べます。既定は `site` です。
 
 ## `match`: 適用条件
 
@@ -164,7 +166,7 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
   {
     "id": "user.example-shorten",
     "name": "Example: 短縮形に変換",
-    "stage": "global",
+    "scope": "global",
     "match": { "hosts": ["www.example.com"], "pathPattern": "^\\/watch$", "hasParams": ["v"] },
     "actions": {
       "setHost": "exmpl.co",
@@ -183,7 +185,7 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
   {
     "id": "user.extra-tracking",
     "name": "追加のトラッキングパラメータ",
-    "stage": "global",
+    "scope": "global",
     "match": {},
     "actions": { "queryMode": "remove", "queryParams": ["spm", "scm", "ref_src"] }
   }
@@ -210,6 +212,6 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
 | `builtin.figma.share-token` | `src/rules/figma.ts` | 上記に当てはまらないFigma URLから、同じ保持対象以外を除去(パスは変更しない) |
 | `builtin.generic.tracking` | `src/rules/generic.ts` | `utm_*`・`gclid`・`fbclid` などを全URLから除去 |
 
-組み込みルールは設定画面から有効/無効を切り替えられます(編集はできません)。挙動を変えたい場合は、組み込みルールを無効にしたうえで同じサイトを対象にした自分のルールを作ってください。
+組み込みルールは設定画面から有効/無効を切り替えられます(編集はできません)。挙動を変えたい場合は、設定画面で組み込みルールを選んで `⌘D` で複製し、複製したルールを編集してください。組み込みルールは無効にしておけば、同じサイトに対して自分のルールだけが効きます。
 
 ほとんどの組み込みルールは既定で有効です。既定で無効にしたいルールは、そのIDを `src/rules/index.ts` の `defaultDisabledBuiltinRuleIds` に加えます。ローカルストレージには「無効にしたルールのID」だけが保存される仕組み(そのため新しい組み込みルールは既定で有効になる)なので、`defaultDisabledBuiltinRuleIds` のIDは初回ロード時に一度だけ無効リストへ書き込まれ、適用済みであることが別のキーに記録されます。ユーザがあとから有効にした状態はそのまま維持されます(`src/lib/ruleStore.ts` の `seedDefaultDisabledRuleIds`)。

@@ -6,6 +6,7 @@ import { builtinRules, defaultDisabledBuiltinRuleIds } from "../rules";
 import {
   createUserRuleId,
   deleteUserRule,
+  duplicateRuleName,
   importUserRules,
   loadEnabledRules,
   loadRuleSet,
@@ -185,5 +186,16 @@ describe("createUserRuleId", () => {
   it("avoids ids that are already taken", () => {
     expect(createUserRuleId("Example", ["user.example"])).toBe("user.example-2");
     expect(createUserRuleId("Example", ["user.example", "user.example-2"])).toBe("user.example-3");
+  });
+
+  it("gives a duplicated rule an id of its own", () => {
+    const name = duplicateRuleName("Amazon: product URL");
+    expect(createUserRuleId(name, ["user.amazon-product-url"])).toBe("user.amazon-product-url-copy");
+  });
+});
+
+describe("duplicateRuleName", () => {
+  it("marks the name as a copy", () => {
+    expect(duplicateRuleName("Amazon: product URL")).toBe("Amazon: product URL (Copy)");
   });
 });
