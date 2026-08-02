@@ -36,3 +36,14 @@ the one exception to the rule above.
 The keyword only works for issues in the same repository, and it closes the issue when the pull
 request is merged. Reference an issue that should stay open — or one in another repository —
 without a keyword instead (`Refs #12`). A pull request with no originating issue gets no such line.
+
+## Keep the pull request body in step with the branch
+
+A pull request body describes the branch as it stands, not as it stood when the pull request was
+opened. After pushing further commits to a branch that already has one, re-read the body and
+update it — the title too, when the scope of the change moved. Renames, reversed decisions and
+work added on review feedback all belong there; a typo fix or a formatting-only commit usually
+changes nothing worth writing down.
+
+This holds however the pull request was created, including ones opened from the Claude Code UI
+rather than by you.
