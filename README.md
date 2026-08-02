@@ -39,9 +39,9 @@ Raycast を開くとコマンド(`Clean URL from Clipboard` と `Manage URL Rule
 ### ホットキーを割り当てる
 
 `Clean URL from Clipboard` のような `no-view` コマンドは、グローバルホットキーから直接実行すると便利。
-Raycast Settings → Extensions で拡張を選び、コマンドの `Record Hotkey` に好きなキー(例: `⌘⇧U`)を割り当てる。
+Raycast Settings → Extensions で拡張を選び、コマンドの `Record Hotkey` に好きなキー(例: `Cmd+Shift+U`)を割り当てる。
 
 ### アンインストール
 
-Raycast Settings → Extensions で対象の拡張を選び、`⌘⇧D`(または右クリックから削除)で開発版の登録を外す。
+Raycast Settings → Extensions で対象の拡張を選び、`Cmd+Shift+D`(または右クリックから削除)で開発版の登録を外す。
 ローカルのクローンを消しても Raycast 側の登録は残るため、先に Raycast 側から外すこと。
