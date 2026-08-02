@@ -87,6 +87,6 @@
 | 33 | ルールを無効化・追加した状態でRaycastを再起動し、再度コマンドを開く | 有効/無効の状態と自分のルールが保持されている | [ ] |
 | 34 | `builtin.amazon.product` を選んで `⌘D` | 「Duplicate URL Rule」のフォームが開き、名前が `Amazon: product URL (Copy)`、Hosts・Path Pattern などが元のルールと同じ内容で埋まっている | [ ] |
 | 35 | 上記をそのまま保存 | 「Your Rules」に複製が追加され、組み込みの `builtin.amazon.product` も元のまま一覧に残る。Amazon商品URLをクリーンすると従来どおり短縮される | [ ] |
-| 36 | `builtin.generic.tracking`(global)を `⌘D` → Stage が `Global` のまま保存 | 条件なし(`match` 空)のまま保存でき、組み込み側を無効化しても複製したルールで `utm_*` が除去される | [ ] |
+| 36 | `builtin.generic.tracking`(global)を `⌘D` → Scope が `Global` のまま保存 | 条件なし(`match` 空)のまま保存でき、組み込み側を無効化しても複製したルールで `utm_*` が除去される | [ ] |
 | 37 | 自分のルールを `⌘D` して保存 | 元のルールと複製の両方が「Your Rules」に並ぶ(上書きされない)。`⌘⇧E` でエクスポートすると2件のIDが異なる | [ ] |
 | 38 | 複製フォームを開いた状態で名前を別のものに書き換えて保存 | 書き換えた名前で保存され、IDもその名前から作られる | [ ] |

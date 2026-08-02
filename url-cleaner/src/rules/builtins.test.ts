@@ -43,8 +43,8 @@ describe("built-in rules", () => {
     expect(playlist).toBeLessThan(videoPath);
   });
 
-  it("run the youtu.be shortening rule in the global stage, after the site rules have normalized the URL", () => {
+  it("run the youtu.be shortening rule in the global scope, after the site rules have normalized the URL", () => {
     const shorten = builtinRules.find((rule) => rule.id === "builtin.youtube.shorten");
-    expect(shorten?.stage).toBe("global");
+    expect(shorten?.scope).toBe("global");
   });
 });

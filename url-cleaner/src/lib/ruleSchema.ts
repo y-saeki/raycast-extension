@@ -1,17 +1,17 @@
 import {
   BUILTIN_ID_PREFIX,
   QUERY_MODES,
-  RULE_STAGES,
+  RULE_SCOPES,
   type QueryMode,
   type RuleActions,
   type RuleMatch,
-  type RuleStage,
+  type RuleScope,
   type UrlRule,
 } from "../rules/types";
 
 export type ParseResult<T> = { ok: true; value: T } | { ok: false; errors: string[] };
 
-const RULE_KEYS = ["id", "name", "description", "stage", "match", "actions"];
+const RULE_KEYS = ["id", "name", "description", "scope", "match", "actions"];
 const MATCH_KEYS = ["hosts", "hostPattern", "pathPattern", "hasParams"];
 const ACTION_KEYS = ["setHost", "setPath", "queryMode", "queryParams", "setParams"];
 
@@ -48,7 +48,7 @@ function checkPattern(pattern: string, field: string, errors: string[]): void {
   }
 }
 
-function parseMatch(input: unknown, stage: RuleStage, errors: string[]): RuleMatch | undefined {
+function parseMatch(input: unknown, scope: RuleScope, errors: string[]): RuleMatch | undefined {
   if (!isRecord(input)) {
     errors.push("match: must be an object");
     return undefined;
@@ -93,7 +93,7 @@ function parseMatch(input: unknown, stage: RuleStage, errors: string[]): RuleMat
   // A `global` rule is allowed to match every URL — that is what makes it global. A `site` rule
   // without any condition would match everything too, shadowing every rule after it. `hasParams`
   // does not count here: on its own it would still match every host.
-  if (stage === "site" && !match.hosts && !match.hostPattern && !match.pathPattern) {
+  if (scope === "site" && !match.hosts && !match.hostPattern && !match.pathPattern) {
     errors.push("match: needs at least one of hosts, hostPattern or pathPattern");
   }
 
@@ -194,16 +194,16 @@ export function parseRule(input: unknown, options: ParseRuleOptions = {}): Parse
     }
   }
 
-  let stage: RuleStage | undefined;
-  if (input.stage !== undefined) {
-    if (typeof input.stage !== "string" || !RULE_STAGES.includes(input.stage as RuleStage)) {
-      errors.push(`stage: must be one of ${RULE_STAGES.join(", ")}`);
+  let scope: RuleScope | undefined;
+  if (input.scope !== undefined) {
+    if (typeof input.scope !== "string" || !RULE_SCOPES.includes(input.scope as RuleScope)) {
+      errors.push(`scope: must be one of ${RULE_SCOPES.join(", ")}`);
     } else {
-      stage = input.stage as RuleStage;
+      scope = input.scope as RuleScope;
     }
   }
 
-  const match = parseMatch(input.match ?? {}, stage ?? "site", errors);
+  const match = parseMatch(input.match ?? {}, scope ?? "site", errors);
   const actions = parseActions(input.actions ?? {}, errors);
 
   if (errors.length > 0 || !match || !actions) {
@@ -212,7 +212,7 @@ export function parseRule(input: unknown, options: ParseRuleOptions = {}): Parse
 
   const rule: UrlRule = { id, name, match, actions };
   if (description) rule.description = description;
-  if (stage) rule.stage = stage;
+  if (scope) rule.scope = scope;
   return { ok: true, value: rule };
 }
 

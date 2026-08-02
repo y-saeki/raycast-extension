@@ -226,7 +226,7 @@ export default function Command() {
         title={entry.rule.name}
         subtitle={describeMatch(entry.rule)}
         accessories={[
-          entry.rule.stage === "global" ? { tag: "global" } : {},
+          entry.rule.scope === "global" ? { tag: "global" } : {},
           { text: entry.enabled ? "Enabled" : "Disabled" },
         ]}
         actions={actionsFor(entry)}

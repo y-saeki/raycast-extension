@@ -17,7 +17,7 @@ describe("summarizeImport", () => {
 
   it("describes a rule without match conditions as matching every URL", () => {
     const { lines, hasGlobalRule } = summarizeImport([
-      { id: "user.all", name: "All", stage: "global", match: {}, actions: { queryMode: "removeAll" } },
+      { id: "user.all", name: "All", scope: "global", match: {}, actions: { queryMode: "removeAll" } },
     ]);
     expect(lines).toEqual(["• All — every URL"]);
     expect(hasGlobalRule).toBe(true);
@@ -51,7 +51,7 @@ describe("formatImportConfirmation", () => {
 
   it("warns about a rule matching every URL", () => {
     const message = formatImportConfirmation([
-      { id: "user.all", name: "All", stage: "global", match: {}, actions: { queryMode: "removeAll" } },
+      { id: "user.all", name: "All", scope: "global", match: {}, actions: { queryMode: "removeAll" } },
     ]);
     expect(message).toContain("matches every URL");
   });

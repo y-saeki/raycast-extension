@@ -58,13 +58,13 @@ export interface RuleActions {
 }
 
 /**
- * When a rule runs.
- * - `site`: site-specific. Only the first matching site rule is applied.
- * - `global`: runs after the site stage, and every matching global rule is applied.
+ * What a rule covers, which also decides when it runs.
+ * - `site`: written for one site. Only the first matching site rule is applied.
+ * - `global`: covers any URL. Runs after the site rules, and every matching global rule is applied.
  */
-export type RuleStage = "site" | "global";
+export type RuleScope = "site" | "global";
 
-export const RULE_STAGES: RuleStage[] = ["site", "global"];
+export const RULE_SCOPES: RuleScope[] = ["site", "global"];
 
 export interface UrlRule {
   /** Stable identifier. Built-in rules use the reserved `builtin.` prefix. */
@@ -72,7 +72,7 @@ export interface UrlRule {
   name: string;
   description?: string;
   /** Defaults to `site`. */
-  stage?: RuleStage;
+  scope?: RuleScope;
   match: RuleMatch;
   actions: RuleActions;
 }

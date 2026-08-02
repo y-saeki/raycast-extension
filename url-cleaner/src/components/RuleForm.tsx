@@ -3,12 +3,12 @@ import { useMemo, useState } from "react";
 import { cleanUrl } from "../lib/cleanUrl";
 import { parseRule } from "../lib/ruleSchema";
 import { createUserRuleId, duplicateRuleName } from "../lib/ruleStore";
-import { QUERY_MODES, RULE_STAGES, type QueryMode, type RuleStage, type UrlRule } from "../rules/types";
+import { QUERY_MODES, RULE_SCOPES, type QueryMode, type RuleScope, type UrlRule } from "../rules/types";
 
 export interface RuleFormValues {
   name: string;
   description: string;
-  stage: RuleStage;
+  scope: RuleScope;
   hosts: string;
   hostPattern: string;
   pathPattern: string;
@@ -24,7 +24,7 @@ export interface RuleFormValues {
 const EMPTY_VALUES: RuleFormValues = {
   name: "",
   description: "",
-  stage: "site",
+  scope: "site",
   hosts: "",
   hostPattern: "",
   pathPattern: "",
@@ -37,9 +37,9 @@ const EMPTY_VALUES: RuleFormValues = {
   testUrl: "",
 };
 
-const STAGE_TITLES: Record<RuleStage, string> = {
-  site: "Site — for one site; only the first matching site rule runs",
-  global: "Global — runs after the site rules, together with every other matching global rule",
+const SCOPE_TITLES: Record<RuleScope, string> = {
+  site: "Site — written for one site; only the first matching site rule runs",
+  global: "Global — can cover any URL; runs after the site rules, and every match applies",
 };
 
 const QUERY_MODE_TITLES: Record<QueryMode, string> = {
@@ -53,7 +53,7 @@ const QUERY_MODE_TITLES: Record<QueryMode, string> = {
 const ERROR_FIELDS: [string, keyof RuleFormValues][] = [
   ["name:", "name"],
   ["description:", "description"],
-  ["stage:", "stage"],
+  ["scope:", "scope"],
   ["match.hosts", "hosts"],
   ["match.hostPattern", "hostPattern"],
   ["match.pathPattern", "pathPattern"],
@@ -102,7 +102,7 @@ export function ruleToFormValues(rule: UrlRule): RuleFormValues {
   return {
     name: rule.name,
     description: rule.description ?? "",
-    stage: rule.stage ?? "site",
+    scope: rule.scope ?? "site",
     hosts: joinList(rule.match.hosts),
     hostPattern: rule.match.hostPattern ?? "",
     pathPattern: rule.match.pathPattern ?? "",
@@ -132,7 +132,7 @@ export function formValuesToRule(
     ...(values.description.trim() ? { description: values.description } : {}),
     // "site" is the default, so leaving it out keeps an ordinary rule free of a field most users
     // never think about.
-    ...(values.stage === "site" ? {} : { stage: values.stage }),
+    ...(values.scope === "site" ? {} : { scope: values.scope }),
     match: {
       hosts: splitList(values.hosts),
       hostPattern: values.hostPattern,
@@ -251,15 +251,15 @@ export function RuleForm({ mode, rule, existingIds, onSave }: RuleFormProps) {
         onChange={(value) => update("description", value)}
       />
       <Form.Dropdown
-        id="stage"
-        title="Stage"
-        info="Site rules are tried first and only the best match runs. Global rules run afterwards on the result, and all of them apply."
-        value={values.stage}
-        error={errors.stage}
-        onChange={(value) => update("stage", value as RuleStage)}
+        id="scope"
+        title="Scope"
+        info="Site rules are tried first and only the first match runs. Global rules run afterwards on the result, and all of them apply."
+        value={values.scope}
+        error={errors.scope}
+        onChange={(value) => update("scope", value as RuleScope)}
       >
-        {RULE_STAGES.map((stage) => (
-          <Form.Dropdown.Item key={stage} value={stage} title={STAGE_TITLES[stage]} />
+        {RULE_SCOPES.map((scope) => (
+          <Form.Dropdown.Item key={scope} value={scope} title={SCOPE_TITLES[scope]} />
         ))}
       </Form.Dropdown>
 
