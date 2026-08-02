@@ -226,12 +226,16 @@ export default function Command() {
 
   return (
     <List isLoading={isLoading} searchBarPlaceholder="Search URL rules">
-      <List.EmptyView
-        icon={Icon.Link}
-        title="No rules found"
-        description="Press ⌘N to create a rule, or ⌘⇧I to import rules from the clipboard."
-        actions={actionsFor()}
-      />
+      {/* Held back until the rules have loaded: rendering it against the initial empty list makes
+          "No rules found" flash before the built-in rules appear. */}
+      {!isLoading && (
+        <List.EmptyView
+          icon={Icon.Link}
+          title="No rules found"
+          description="Press ⌘N to create a rule, or ⌘⇧I to import rules from the clipboard."
+          actions={actionsFor()}
+        />
+      )}
       <List.Section title="Your Rules" subtitle={userEntries.length > 0 ? `${userEntries.length}` : "none yet"}>
         {userEntries.map(itemFor)}
       </List.Section>
