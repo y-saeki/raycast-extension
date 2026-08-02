@@ -6,3 +6,4 @@
 - Manage URL Rules: toggle built-in rules, create and edit your own, duplicate any rule to start from it, import and export them as JSON
 - Built-in rules for Amazon, X, YouTube, Google Meet, Figma, and generic tracking parameters (`utm_*`, `gclid`, `fbclid`, …)
 - YouTube URLs are kept in their `youtube.com/watch?v=<id>` form by default; enable the `YouTube: shorten to youtu.be` rule to get short `youtu.be` URLs instead
+- Runs on both macOS and Windows

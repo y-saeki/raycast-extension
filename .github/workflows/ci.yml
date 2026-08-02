@@ -33,8 +33,9 @@ jobs:
 
       - run: npm ci
 
-      # `ray build` and `ray lint` talk to the Raycast app and API, so they stay a macOS-only step
-      # (see docs/store-release.md). What they wrap — ESLint, Prettier, types — runs here.
+      # `ray build` and `ray lint` talk to a locally installed Raycast app, so they stay a manual step
+      # on a machine running Raycast — macOS or Windows (see docs/store-release.md). What they wrap —
+      # ESLint, Prettier, types — is platform independent and runs here.
       - name: Type check
         run: npx tsc --noEmit
 

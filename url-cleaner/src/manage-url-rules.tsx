@@ -191,16 +191,25 @@ export default function Command() {
         </ActionPanel.Section>
 
         <ActionPanel.Section>
+          {/* Raycast does not translate `cmd` to `ctrl` on Windows, so ambiguous modifiers have to be
+              spelled out per platform. The shortcuts above use Keyboard.Shortcut.Common, which
+              already carries both. */}
           <Action
             title="Export Rules to Clipboard"
             icon={Icon.Download}
-            shortcut={{ modifiers: ["cmd", "shift"], key: "e" }}
+            shortcut={{
+              macOS: { modifiers: ["cmd", "shift"], key: "e" },
+              Windows: { modifiers: ["ctrl", "shift"], key: "e" },
+            }}
             onAction={handleExport}
           />
           <Action
             title="Import Rules from Clipboard"
             icon={Icon.Upload}
-            shortcut={{ modifiers: ["cmd", "shift"], key: "i" }}
+            shortcut={{
+              macOS: { modifiers: ["cmd", "shift"], key: "i" },
+              Windows: { modifiers: ["ctrl", "shift"], key: "i" },
+            }}
             onAction={handleImport}
           />
           <Action
@@ -237,12 +246,14 @@ export default function Command() {
   return (
     <List isLoading={isLoading} searchBarPlaceholder="Search URL rules">
       {/* Held back until the rules have loaded: rendering it against the initial empty list makes
-          "No rules found" flash before the built-in rules appear. */}
+          "No rules found" flash before the built-in rules appear.
+          The description names no keys — `environment` exposes no platform to pick ⌘ or Ctrl from,
+          and the action panel already shows the right shortcut for whichever platform it runs on. */}
       {!isLoading && (
         <List.EmptyView
           icon={Icon.Link}
           title="No rules found"
-          description="Press ⌘N to create a rule, or ⌘⇧I to import rules from the clipboard."
+          description="Use the actions below to create a rule, or import rules from the clipboard."
           actions={actionsFor()}
         />
       )}
