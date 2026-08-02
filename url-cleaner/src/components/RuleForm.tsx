@@ -2,12 +2,13 @@ import { Action, ActionPanel, Form, Icon, showToast, Toast, useNavigation } from
 import { useMemo, useState } from "react";
 import { cleanUrl } from "../lib/cleanUrl";
 import { parseRule } from "../lib/ruleSchema";
-import { createUserRuleId } from "../lib/ruleStore";
-import { QUERY_MODES, type QueryMode, type UrlRule } from "../rules/types";
+import { createUserRuleId, duplicateRuleName } from "../lib/ruleStore";
+import { QUERY_MODES, RULE_SCOPES, type QueryMode, type RuleScope, type UrlRule } from "../rules/types";
 
 export interface RuleFormValues {
   name: string;
   description: string;
+  scope: RuleScope;
   hosts: string;
   hostPattern: string;
   pathPattern: string;
@@ -23,6 +24,7 @@ export interface RuleFormValues {
 const EMPTY_VALUES: RuleFormValues = {
   name: "",
   description: "",
+  scope: "site",
   hosts: "",
   hostPattern: "",
   pathPattern: "",
@@ -33,6 +35,11 @@ const EMPTY_VALUES: RuleFormValues = {
   queryParams: "",
   setParams: "",
   testUrl: "",
+};
+
+const SCOPE_TITLES: Record<RuleScope, string> = {
+  site: "Site — written for one site; only the first matching site rule runs",
+  global: "Global — can cover any URL; runs after the site rules, and every match applies",
 };
 
 const QUERY_MODE_TITLES: Record<QueryMode, string> = {
@@ -46,6 +53,7 @@ const QUERY_MODE_TITLES: Record<QueryMode, string> = {
 const ERROR_FIELDS: [string, keyof RuleFormValues][] = [
   ["name:", "name"],
   ["description:", "description"],
+  ["scope:", "scope"],
   ["match.hosts", "hosts"],
   ["match.hostPattern", "hostPattern"],
   ["match.pathPattern", "pathPattern"],
@@ -94,6 +102,7 @@ export function ruleToFormValues(rule: UrlRule): RuleFormValues {
   return {
     name: rule.name,
     description: rule.description ?? "",
+    scope: rule.scope ?? "site",
     hosts: joinList(rule.match.hosts),
     hostPattern: rule.match.hostPattern ?? "",
     pathPattern: rule.match.pathPattern ?? "",
@@ -121,6 +130,9 @@ export function formValuesToRule(
     id,
     name: values.name,
     ...(values.description.trim() ? { description: values.description } : {}),
+    // "site" is the default, so leaving it out keeps an ordinary rule free of a field most users
+    // never think about.
+    ...(values.scope === "site" ? {} : { scope: values.scope }),
     match: {
       hosts: splitList(values.hosts),
       hostPattern: values.hostPattern,
@@ -139,17 +151,34 @@ export function formValuesToRule(
   });
 }
 
-interface RuleFormProps {
-  /** The rule being edited, or undefined when creating a new one. */
-  rule?: UrlRule;
+/**
+ * `duplicate` fills the form from an existing rule — a built-in one included — but saves it as a new
+ * user rule, so the source rule keeps its own id and stays untouched.
+ */
+export type RuleFormMode = "create" | "edit" | "duplicate";
+
+type RuleFormProps = {
   /** Ids already in use, so a newly created rule gets a unique one. */
   existingIds: string[];
   onSave: (rule: UrlRule) => Promise<void>;
+} & ({ mode: "create"; rule?: undefined } | { mode: "edit" | "duplicate"; rule: UrlRule });
+
+const NAVIGATION_TITLES: Record<RuleFormMode, string> = {
+  create: "New URL Rule",
+  edit: "Edit URL Rule",
+  duplicate: "Duplicate URL Rule",
+};
+
+function initialValues(mode: RuleFormMode, rule: UrlRule | undefined): RuleFormValues {
+  if (!rule) return EMPTY_VALUES;
+  const values = ruleToFormValues(rule);
+  return mode === "duplicate" ? { ...values, name: duplicateRuleName(rule.name) } : values;
 }
 
-export function RuleForm({ rule, existingIds, onSave }: RuleFormProps) {
+export function RuleForm({ mode, rule, existingIds, onSave }: RuleFormProps) {
   const { pop } = useNavigation();
-  const [values, setValues] = useState<RuleFormValues>(rule ? ruleToFormValues(rule) : EMPTY_VALUES);
+  const isEditing = mode === "edit";
+  const [values, setValues] = useState<RuleFormValues>(() => initialValues(mode, rule));
   const [errors, setErrors] = useState<Partial<Record<keyof RuleFormValues, string>>>({});
 
   function update<K extends keyof RuleFormValues>(field: K, value: RuleFormValues[K]) {
@@ -161,16 +190,16 @@ export function RuleForm({ rule, existingIds, onSave }: RuleFormProps) {
     if (!values.testUrl.trim()) {
       return "Enter a URL above to see what this rule would do to it.";
     }
-    const draft = formValuesToRule(values, rule?.id ?? "user.preview");
+    const draft = formValuesToRule(values, isEditing ? rule.id : "user.preview");
     if (!draft.ok) {
       return `⚠️ The rule is not valid yet:\n${draft.errors.map((error) => `- ${error}`).join("\n")}`;
     }
     const cleaned = cleanUrl(values.testUrl.trim(), [draft.value]);
     return cleaned === values.testUrl.trim() ? `Unchanged:\n${cleaned}` : `Result:\n${cleaned}`;
-  }, [values, rule?.id]);
+  }, [values, isEditing, rule?.id]);
 
   async function handleSubmit() {
-    const id = rule?.id ?? createUserRuleId(values.name, existingIds);
+    const id = isEditing ? rule.id : createUserRuleId(values.name, existingIds);
     const result = formValuesToRule(values, id);
 
     if (!result.ok) {
@@ -194,10 +223,14 @@ export function RuleForm({ rule, existingIds, onSave }: RuleFormProps) {
 
   return (
     <Form
-      navigationTitle={rule ? "Edit URL Rule" : "New URL Rule"}
+      navigationTitle={NAVIGATION_TITLES[mode]}
       actions={
         <ActionPanel>
-          <Action.SubmitForm title={rule ? "Save Rule" : "Create Rule"} icon={Icon.Check} onSubmit={handleSubmit} />
+          <Action.SubmitForm
+            title={isEditing ? "Save Rule" : "Create Rule"}
+            icon={Icon.Check}
+            onSubmit={handleSubmit}
+          />
         </ActionPanel>
       }
     >
@@ -217,11 +250,23 @@ export function RuleForm({ rule, existingIds, onSave }: RuleFormProps) {
         error={errors.description}
         onChange={(value) => update("description", value)}
       />
+      <Form.Dropdown
+        id="scope"
+        title="Scope"
+        info="Site rules are tried first and only the first match runs. Global rules run afterwards on the result, and all of them apply."
+        value={values.scope}
+        error={errors.scope}
+        onChange={(value) => update("scope", value as RuleScope)}
+      >
+        {RULE_SCOPES.map((scope) => (
+          <Form.Dropdown.Item key={scope} value={scope} title={SCOPE_TITLES[scope]} />
+        ))}
+      </Form.Dropdown>
 
       <Form.Separator />
       <Form.Description
         title="Match"
-        text="Fill in at least one condition. A rule applies only when every condition it defines matches. Patterns are regular expressions, always matched case-insensitively."
+        text="A rule applies only when every condition it defines matches. A site rule needs at least one host or pattern; a global rule may leave them all empty to apply to every URL. Patterns are regular expressions, always matched case-insensitively."
       />
       <Form.TextField
         id="hosts"

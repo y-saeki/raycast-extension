@@ -34,7 +34,7 @@ export const genericRules: UrlRule[] = [
     id: "builtin.generic.tracking",
     name: "Generic tracking parameters",
     description: "Removes utm_*, gclid, fbclid and friends from any URL, after the site rules have run.",
-    stage: "global",
+    scope: "global",
     match: {},
     actions: {
       queryMode: "remove",

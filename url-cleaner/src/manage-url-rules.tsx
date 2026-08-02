@@ -159,14 +159,24 @@ export default function Command() {
             title="Create Rule"
             icon={Icon.Plus}
             shortcut={Keyboard.Shortcut.Common.New}
-            target={<RuleForm existingIds={existingIds} onSave={handleSave} />}
+            target={<RuleForm mode="create" existingIds={existingIds} onSave={handleSave} />}
           />
           {entry && !entry.isBuiltin && (
             <Action.Push
               title="Edit Rule"
               icon={Icon.Pencil}
               shortcut={Keyboard.Shortcut.Common.Edit}
-              target={<RuleForm rule={entry.rule} existingIds={existingIds} onSave={handleSave} />}
+              target={<RuleForm mode="edit" rule={entry.rule} existingIds={existingIds} onSave={handleSave} />}
+            />
+          )}
+          {/* Offered for built-in rules too: duplicating one is the only way to start from it, since
+              built-in rules themselves cannot be edited. */}
+          {entry && (
+            <Action.Push
+              title="Duplicate Rule"
+              icon={Icon.CopyClipboard}
+              shortcut={Keyboard.Shortcut.Common.Duplicate}
+              target={<RuleForm mode="duplicate" rule={entry.rule} existingIds={existingIds} onSave={handleSave} />}
             />
           )}
           {entry && !entry.isBuiltin && (
@@ -216,7 +226,7 @@ export default function Command() {
         title={entry.rule.name}
         subtitle={describeMatch(entry.rule)}
         accessories={[
-          entry.rule.stage === "global" ? { tag: "global" } : {},
+          entry.rule.scope === "global" ? { tag: "global" } : {},
           { text: entry.enabled ? "Enabled" : "Disabled" },
         ]}
         actions={actionsFor(entry)}
