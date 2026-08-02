@@ -18,8 +18,8 @@
 |---|---|---|---|
 | 2 | Amazon商品ページのURL(長い商品名スラッグ + `ref=`付き) | `https://www.amazon.co.jp/dp/<ASIN>` に短縮 | [ ] |
 | 3 | Xの投稿URL(`?s=20&t=...`付き) | クエリが全部消えて `.../status/<id>` だけになる | [ ] |
-| 4 | `youtu.be/xxxx?si=...` 形式 | `https://youtu.be/xxxx` のまま短く保たれ、`si`が消える | [ ] |
-| 5 | `youtube.com/watch?v=xxxx&si=...&t=42s` | `https://youtu.be/xxxx?t=42s` に短縮される | [ ] |
+| 4 | `youtu.be/xxxx?si=...` 形式 | `si`が消えて `https://www.youtube.com/watch?v=xxxx` になる(既定では短縮ルールが無効なため、youtu.beも展開される) | [ ] |
+| 5 | `youtube.com/watch?v=xxxx&si=...&t=42s` | `https://www.youtube.com/watch?v=xxxx&t=42s`(`si`が消え、`builtin.youtube.shorten` が既定で無効なので短縮されない) | [ ] |
 | 5-1 | Google Meetの会議URL(`meet.google.com/xxx-yyyy-zzz?authuser=0&hs=122`) | クエリが全部消えて `https://meet.google.com/xxx-yyyy-zzz` だけになり、そのURLで実際に会議に参加できる | [ ] |
 | 5-2 | Googleカレンダーの予定から取得した `meet.google.com/lookup/xxxx?authuser=1` | クエリが全部消えて `lookup/xxxx` のパスは残り、そのURLで会議に参加できる | [ ] |
 | 6 | FigJamボードのURL(`node-id`+`t`付き) | `node-id`は残り`t`が消える | [ ] |
@@ -30,14 +30,18 @@
 
 ## YouTube(2段構成の確認)
 
+`builtin.youtube.shorten` は**インストール直後は無効**です。4-1〜4-5 は既定の状態(無効のまま)で確認してください。
+
 | # | クリップボードにコピーするもの | 期待される結果 | 確認 |
 |---|---|---|---|
-| 4-1 | Shortsの共有URL(`youtube.com/shorts/xxxx?feature=share`) | `https://youtu.be/xxxx` になり、ブラウザで開くと同じ動画が再生される | [ ] |
-| 4-2 | ライブ配信のURL(`youtube.com/live/xxxx?si=...`) | `https://youtu.be/xxxx` になり、同じ配信が開く | [ ] |
-| 4-3 | 再生リスト再生中の動画URL(`watch?v=xxxx&list=PLyyy&index=3`) | `https://youtu.be/xxxx?list=PLyyy` になり、再生リスト付きで開く | [ ] |
+| 4-1 | Shortsの共有URL(`youtube.com/shorts/xxxx?feature=share`) | `https://www.youtube.com/watch?v=xxxx` になり、ブラウザで開くと同じ動画が再生される | [ ] |
+| 4-2 | ライブ配信のURL(`youtube.com/live/xxxx?si=...`) | `https://www.youtube.com/watch?v=xxxx` になり、同じ配信が開く | [ ] |
+| 4-3 | 再生リスト再生中の動画URL(`watch?v=xxxx&list=PLyyy&index=3`) | `https://www.youtube.com/watch?v=xxxx&list=PLyyy` になり、再生リスト付きで開く | [ ] |
 | 4-4 | 再生リストページのURL(`youtube.com/playlist?list=PLyyy&si=...`) | `https://www.youtube.com/playlist?list=PLyyy`(youtube.comのまま) | [ ] |
 | 4-5 | YouTube MusicのURL(`music.youtube.com/watch?v=xxxx&si=...`) | ホストが `music.youtube.com` のまま残り、`youtu.be`に変換されない | [ ] |
-| 4-6 | `builtin.youtube.shorten` を無効化 → `youtube.com/shorts/xxxx` をクリーン | `https://www.youtube.com/watch?v=xxxx` になる(短縮されない) | [ ] |
+| 4-6 | `builtin.youtube.shorten` を有効化 → `youtube.com/shorts/xxxx` をクリーン | `https://youtu.be/xxxx` に短縮され、ブラウザで開くと同じ動画が再生される | [ ] |
+| 4-7 | 4-6 の状態のまま `Manage URL Rules` を閉じて開き直す(可能ならRaycastも再起動) | `builtin.youtube.shorten` が有効のまま残っている(勝手に無効へ戻らない) | [ ] |
+| 4-8 | `Reset to Defaults` を実行 | `builtin.youtube.shorten` が無効に戻り、`youtube.com/watch?v=xxxx` 形式で出力される | [ ] |
 
 ## 汎用パラメータ除去(サイト固有ルール未対応のドメイン)
 
@@ -68,7 +72,7 @@
 
 | # | 内容 | 期待結果 | 確認 |
 |---|---|---|---|
-| 18 | コマンドを開く | 「Built-in Rules」に組み込みルール13件が全て有効(緑チェック)で並ぶ。「Your Rules」は空 | [ ] |
+| 18 | コマンドを開く | 「Built-in Rules」に組み込みルール13件が並び、`builtin.youtube.shorten` 以外は有効(緑チェック)、`builtin.youtube.shorten` だけ無効。「Your Rules」は空 | [ ] |
 | 19 | `builtin.amazon.product`(Amazon)を選んでEnterで無効化 → Amazon商品URLをコピーしてクリーン | `/dp/<ASIN>` への短縮が行われず、`utm_*`等の汎用パラメータ除去だけが効く | [ ] |
 | 20 | 上記ルールを再度有効化 → 同じURLをクリーン | シナリオ#2と同じ結果に戻る | [ ] |
 | 21 | `builtin.generic.tracking` を無効化 → `?utm_source=x` 付きURLをクリーン | `utm_source`が残る(HUDは「変更はありませんでした」) | [ ] |
@@ -83,7 +87,7 @@
 | 29 | JSONでない文字列をコピーして `⌘⇧I` | エラーが表示され、既存のルールは壊れない | [ ] |
 | 30 | 自分のルールを `⌃X` で削除 | 確認ダイアログが出て、OKすると一覧から消える | [ ] |
 | 31 | 組み込みルールを選択した状態でアクションパネルを開く | Edit Rule / Delete Rule は表示されない(組み込みは編集不可)が、Duplicate Rule は表示される | [ ] |
-| 32 | 「Reset to Defaults」を実行 | 確認ダイアログの後、自分のルールが全削除され、組み込みルールが全て有効に戻る | [ ] |
+| 32 | 「Reset to Defaults」を実行 | 確認ダイアログの後、自分のルールが全削除され、組み込みルールがインストール直後の状態(`builtin.youtube.shorten` のみ無効、他は有効)に戻る | [ ] |
 | 33 | ルールを無効化・追加した状態でRaycastを再起動し、再度コマンドを開く | 有効/無効の状態と自分のルールが保持されている | [ ] |
 | 34 | `builtin.amazon.product` を選んで `⌘D` | 「Duplicate URL Rule」のフォームが開き、名前が `Amazon: product URL (Copy)`、Hosts・Path Pattern などが元のルールと同じ内容で埋まっている | [ ] |
 | 35 | 上記をそのまま保存 | 「Your Rules」に複製が追加され、組み込みの `builtin.amazon.product` も元のまま一覧に残る。Amazon商品URLをクリーンすると従来どおり短縮される | [ ] |

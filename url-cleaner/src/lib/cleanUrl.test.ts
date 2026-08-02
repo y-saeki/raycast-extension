@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { builtinRules } from "../rules";
+import { builtinRules, defaultDisabledBuiltinRuleIds } from "../rules";
 import { cleanText, cleanUrl } from "./cleanUrl";
+
+/** The rules an as-installed extension runs with, i.e. without the ones that ship switched off. */
+const asInstalledRules = builtinRules.filter((rule) => !defaultDisabledBuiltinRuleIds.includes(rule.id));
 
 describe("cleanUrl", () => {
   it("normalizes an Amazon product URL to /dp/<ASIN>", () => {
@@ -19,6 +22,8 @@ describe("cleanUrl", () => {
     expect(cleanUrl(input)).toBe("https://youtu.be/dQw4w9WgXcQ?t=42");
   });
 
+  // `builtin.youtube.shorten` ships switched off (see `defaultDisabledBuiltinRuleIds`), so the
+  // youtu.be results below are what the user gets after enabling it, not the as-installed default.
   it("shortens a youtube.com/watch URL to youtu.be", () => {
     const input = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&si=abc123&feature=share&pp=xyz";
     expect(cleanUrl(input)).toBe("https://youtu.be/dQw4w9WgXcQ");
@@ -59,10 +64,9 @@ describe("cleanUrl", () => {
     expect(cleanUrl(input)).toBe("https://music.youtube.com/watch?v=dQw4w9WgXcQ");
   });
 
-  it("leaves a youtube.com/watch URL on youtube.com when the shortening rule is disabled", () => {
-    const rules = builtinRules.filter((rule) => rule.id !== "builtin.youtube.shorten");
+  it("leaves a youtube.com/watch URL on youtube.com when the shortening rule is off, as it is by default", () => {
     const input = "https://www.youtube.com/shorts/dQw4w9WgXcQ?feature=share";
-    expect(cleanUrl(input, rules)).toBe("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
+    expect(cleanUrl(input, asInstalledRules)).toBe("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
   });
 
   it("strips all query params from a Google Meet meeting URL", () => {
@@ -152,6 +156,27 @@ describe("cleanUrl", () => {
 
   it("returns non-URL strings unchanged", () => {
     expect(cleanUrl("not a url")).toBe("not a url");
+  });
+});
+
+describe("cleanUrl with the as-installed rules", () => {
+  it("keeps a youtube.com/watch URL on youtube.com, dropping everything but the start time", () => {
+    const input = "https://www.youtube.com/watch?v=dQw4w9WgXcQ&si=abc123&feature=share&t=42";
+    expect(cleanUrl(input, asInstalledRules)).toBe("https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=42");
+  });
+
+  it("expands a youtu.be URL to youtube.com, since the shortening rule is the one that ships off", () => {
+    const input = "https://youtu.be/dQw4w9WgXcQ?si=abc123&t=42";
+    expect(cleanUrl(input, asInstalledRules)).toBe("https://www.youtube.com/watch?v=dQw4w9WgXcQ&t=42");
+  });
+
+  it("still cleans the sites the shortening rule has nothing to do with", () => {
+    expect(cleanUrl("https://x.com/someuser/status/123?s=20", asInstalledRules)).toBe(
+      "https://x.com/someuser/status/123",
+    );
+    expect(cleanUrl("https://example.com/post?utm_source=news&id=42", asInstalledRules)).toBe(
+      "https://example.com/post?id=42",
+    );
   });
 });
 

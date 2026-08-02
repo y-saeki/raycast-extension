@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from "vitest";
 import type { UrlRule } from "../rules/types";
 // `@raycast/api` is aliased to this stub in vitest.config.ts, so the store reads and writes here.
 import { localStorageContents as storage } from "../test/raycastApiStub";
-import { builtinRules } from "../rules";
+import { builtinRules, defaultDisabledBuiltinRuleIds } from "../rules";
 import {
   createUserRuleId,
   deleteUserRule,
@@ -14,6 +14,9 @@ import {
   saveUserRule,
   setRuleEnabled,
 } from "./ruleStore";
+
+/** How many built-in rules are on right after installing, i.e. all but the ship-disabled ones. */
+const defaultEnabledBuiltinCount = builtinRules.length - defaultDisabledBuiltinRuleIds.length;
 
 const userRule: UrlRule = {
   id: "user.example",
@@ -27,11 +30,14 @@ beforeEach(() => {
 });
 
 describe("loadRuleSet", () => {
-  it("returns every built-in rule enabled by default", async () => {
+  it("lists every built-in rule, enabled apart from the ones that ship switched off", async () => {
     const { entries, enabledRules } = await loadRuleSet();
     expect(entries).toHaveLength(builtinRules.length);
-    expect(entries.every((entry) => entry.isBuiltin && entry.enabled)).toBe(true);
-    expect(enabledRules).toHaveLength(builtinRules.length);
+    expect(entries.every((entry) => entry.isBuiltin)).toBe(true);
+    expect(new Set(entries.filter((entry) => !entry.enabled).map((entry) => entry.rule.id))).toEqual(
+      new Set(defaultDisabledBuiltinRuleIds),
+    );
+    expect(enabledRules).toHaveLength(defaultEnabledBuiltinCount);
   });
 
   it("lists user rules before built-in rules, so they can override them", async () => {
@@ -50,8 +56,10 @@ describe("loadRuleSet", () => {
   it("falls back to the built-in rules when storage is corrupt", async () => {
     storage.set("userRules", "{not json");
     storage.set("disabledRuleIds", "{not json");
-    const { entries } = await loadRuleSet();
+    storage.set("seededDefaultDisabledRuleIds", "{not json");
+    const { entries, enabledRules } = await loadRuleSet();
     expect(entries).toHaveLength(builtinRules.length);
+    expect(enabledRules).toHaveLength(defaultEnabledBuiltinCount);
   });
 });
 
@@ -64,7 +72,7 @@ describe("setRuleEnabled", () => {
 
     const enabled = await loadEnabledRules();
     expect(enabled.some((rule) => rule.id === "builtin.amazon.product")).toBe(false);
-    expect(enabled).toHaveLength(builtinRules.length - 1);
+    expect(enabled).toHaveLength(defaultEnabledBuiltinCount - 1);
   });
 
   it("re-enables a rule", async () => {
@@ -80,7 +88,50 @@ describe("setRuleEnabled", () => {
 
     // Simulating a future version: an id nobody has ever seen is not in the disabled list.
     const { entries } = await loadRuleSet();
-    expect(entries.filter((entry) => entry.enabled)).toHaveLength(builtinRules.length - 1);
+    expect(entries.filter((entry) => entry.enabled)).toHaveLength(defaultEnabledBuiltinCount - 1);
+  });
+});
+
+describe("rules that ship switched off", () => {
+  const shortenId = "builtin.youtube.shorten";
+
+  async function isEnabled(id: string): Promise<boolean> {
+    const { entries } = await loadRuleSet();
+    return entries.find((entry) => entry.rule.id === id)?.enabled === true;
+  }
+
+  it("switches the YouTube shortening rule off on a fresh install", async () => {
+    expect(defaultDisabledBuiltinRuleIds).toContain(shortenId);
+    expect(await isEnabled(shortenId)).toBe(false);
+
+    const enabled = await loadEnabledRules();
+    expect(enabled.some((rule) => rule.id === shortenId)).toBe(false);
+  });
+
+  it("keeps the rule on once the user enables it, across later loads", async () => {
+    await loadRuleSet();
+    await setRuleEnabled(shortenId, true);
+
+    // Every later load — a new command run, an extension update, a Raycast restart — reads storage
+    // again, and must not re-apply the default.
+    expect(await isEnabled(shortenId)).toBe(true);
+    expect(await isEnabled(shortenId)).toBe(true);
+  });
+
+  it("seeds the default only once, leaving no duplicate ids behind", async () => {
+    await loadRuleSet();
+    await loadRuleSet();
+    expect(JSON.parse(storage.get("disabledRuleIds") ?? "[]")).toEqual([shortenId]);
+    expect(JSON.parse(storage.get("seededDefaultDisabledRuleIds") ?? "[]")).toEqual([shortenId]);
+  });
+
+  it("switches the rule back off after a reset to defaults", async () => {
+    await loadRuleSet();
+    await setRuleEnabled(shortenId, true);
+    expect(await isEnabled(shortenId)).toBe(true);
+
+    await resetToDefaults();
+    expect(await isEnabled(shortenId)).toBe(false);
   });
 });
 
@@ -112,14 +163,14 @@ describe("user rules", () => {
     expect(entries.filter((entry) => !entry.isBuiltin)).toHaveLength(1);
   });
 
-  it("resets user rules and re-enables every built-in rule", async () => {
+  it("resets user rules and restores the built-in rules to their as-installed state", async () => {
     await saveUserRule(userRule);
     await setRuleEnabled("builtin.amazon.product", false);
     await resetToDefaults();
 
     const { entries, enabledRules } = await loadRuleSet();
     expect(entries).toHaveLength(builtinRules.length);
-    expect(enabledRules).toHaveLength(builtinRules.length);
+    expect(enabledRules).toHaveLength(defaultEnabledBuiltinCount);
   });
 });
 

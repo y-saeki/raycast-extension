@@ -159,7 +159,7 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
 
 ### URLを短縮形にする
 
-逆に、クエリパラメータをパスへ移す例です(組み込みの `builtin.youtube.shorten` と同じ考え方)。`hasParams` があるので `v` を持たないURLには適用されません。
+逆に、クエリパラメータをパスへ移す例です(組み込みの `builtin.youtube.shorten` — 既定では無効 — と同じ考え方)。`hasParams` があるので `v` を持たないURLには適用されません。
 
 ```json
 [
@@ -205,7 +205,7 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
 | `builtin.youtube.video-path` | `src/rules/youtube.ts` | Shorts・Live・埋め込みを動画URLに変換 |
 | `builtin.youtube.watch` | `src/rules/youtube.ts` | `v`/`t`/`list` 以外のパラメータを削除 |
 | `builtin.youtube.playlist` | `src/rules/youtube.ts` | 再生リストURLから `list` 以外を削除 |
-| `builtin.youtube.shorten` | `src/rules/youtube.ts` | `youtube.com/watch?v=<id>` を `youtu.be/<id>` に短縮(`global`) |
+| `builtin.youtube.shorten` | `src/rules/youtube.ts` | `youtube.com/watch?v=<id>` を `youtu.be/<id>` に短縮(`global`、**既定で無効**) |
 | `builtin.meet.code` | `src/rules/meet.ts` | 会議URL(`xxx-yyyy-zzz`)のクエリを全削除 |
 | `builtin.meet.lookup` | `src/rules/meet.ts` | `lookup/<エイリアス>` URLのクエリを全削除 |
 | `builtin.figma.slug` | `src/rules/figma.ts` | ファイル名スラッグと共有トークンを除去(`node-id`・`m`・`ready-for-dev`・`version-id`・プロトタイプ再生用パラメータは保持)。`/design/`・`/proto/`・`/board/`・`/slides/`・`/deck/`・`/site/`・`/buzz/`・`/make/`・`/file/` が対象 |
@@ -213,3 +213,5 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
 | `builtin.generic.tracking` | `src/rules/generic.ts` | `utm_*`・`gclid`・`fbclid` などを全URLから除去 |
 
 組み込みルールは設定画面から有効/無効を切り替えられます(編集はできません)。挙動を変えたい場合は、設定画面で組み込みルールを選んで `⌘D` で複製し、複製したルールを編集してください。組み込みルールは無効にしておけば、同じサイトに対して自分のルールだけが効きます。
+
+ほとんどの組み込みルールは既定で有効です。既定で無効にしたいルールは、そのIDを `src/rules/index.ts` の `defaultDisabledBuiltinRuleIds` に加えます。ローカルストレージには「無効にしたルールのID」だけが保存される仕組み(そのため新しい組み込みルールは既定で有効になる)なので、`defaultDisabledBuiltinRuleIds` のIDは初回ロード時に一度だけ無効リストへ書き込まれ、適用済みであることが別のキーに記録されます。ユーザがあとから有効にした状態はそのまま維持されます(`src/lib/ruleStore.ts` の `seedDefaultDisabledRuleIds`)。

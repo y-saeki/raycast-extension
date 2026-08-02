@@ -22,5 +22,13 @@ export const builtinRules: UrlRule[] = [
   ...genericRules,
 ];
 
+/**
+ * Built-in rules that ship switched off.
+ *
+ * These ids are seeded into the stored disabled list exactly once, on first load; after that the
+ * user's own choice wins, so turning one on survives extension updates. See `lib/ruleStore.ts`.
+ */
+export const defaultDisabledBuiltinRuleIds: readonly string[] = ["builtin.youtube.shorten"];
+
 export { amazonRules, figmaRules, genericRules, meetRules, xRules, youtubeRules };
 export * from "./types";
