@@ -5,6 +5,24 @@ This file provides guidance to Claude Code when working in this repository.
 Individual projects may add their own `CLAUDE.md` with project-specific conventions
 (e.g. `url-cleaner/CLAUDE.md`). Those apply in addition to what is written here.
 
+## Check the official Raycast documentation
+
+Anything that depends on how Raycast itself behaves — manifest fields, what an API returns, which
+APIs exist, store requirements, platform differences — is settled by reading
+<https://developers.raycast.com/>, not by recalling it or inferring it from the code already here.
+Raycast ships often and the API surface moves with it, so a habit that was correct a few releases
+ago may no longer be. The pages worth reaching for first:
+
+- [Manifest](https://developers.raycast.com/information/manifest) — every `package.json` field,
+  including which are required
+- [API Reference](https://developers.raycast.com/api-reference/) — what a given API actually offers
+- [Prepare an Extension for Store](https://developers.raycast.com/basics/prepare-an-extension-for-store)
+  — the review checklist
+- [Changelog](https://developers.raycast.com/misc/changelog) — which release introduced a feature,
+  which matters when deciding whether the pinned `@raycast/api` version already has it
+
+This applies to every task in this repository, not just ones that mention Raycast versions.
+
 ## One directory per extension, no `raycast-` prefix
 
 This repository holds only Raycast extensions, one per directory at the repository root.

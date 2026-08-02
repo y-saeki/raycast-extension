@@ -12,14 +12,20 @@ y-saeki が作成する Raycast Extension 置き場。拡張機能ごとに root
 
 ### 前提
 
-- macOS(`ray` CLI は Raycast アプリと通信するため、macOS 以外では動かない)
+- macOS または Windows に Raycast がインストールされていること
+  (`ray` CLI はローカルの Raycast アプリと通信するため、Raycast のない環境では動かない)
 - Node.js 22.14.0 以上と npm
 - Raycast にサインインしていること(開発モードの利用にアカウントが必要)
+
+Windows で動かすには、拡張の `package.json` の `platforms` に `"Windows"` が含まれている必要がある。
+このフィールドを省略した場合の既定値は `["macOS"]` で、そのままでは Windows の Raycast が拡張を
+受け付けない([Manifest](https://developers.raycast.com/information/manifest))。
 
 ### 手順
 
 拡張ごとにディレクトリが独立しているので、インストールしたい拡張のディレクトリで作業する
-(ここでは `url-cleaner` を例にする)。
+(ここでは `url-cleaner` を例にする)。手順は macOS でも Windows でも同じで、Windows では
+PowerShell や Windows Terminal から実行する。
 
 ```sh
 git clone https://github.com/y-saeki/raycast-extension.git
@@ -39,9 +45,11 @@ Raycast を開くとコマンド(`Clean URL from Clipboard` と `Manage URL Rule
 ### ホットキーを割り当てる
 
 `Clean URL from Clipboard` のような `no-view` コマンドは、グローバルホットキーから直接実行すると便利。
-Raycast Settings → Extensions で拡張を選び、コマンドの `Record Hotkey` に好きなキー(例: `Cmd+Shift+U`)を割り当てる。
+Raycast Settings → Extensions で拡張を選び、コマンドの `Record Hotkey` に好きなキー
+(例: macOS なら `Cmd+Shift+U`、Windows なら `Ctrl+Shift+U`)を割り当てる。
 
 ### アンインストール
 
-Raycast Settings → Extensions で対象の拡張を選び、`Cmd+Shift+D`(または右クリックから削除)で開発版の登録を外す。
+Raycast Settings → Extensions で対象の拡張を選び、`Cmd+Shift+D`(Windows では `Ctrl+Shift+D`。
+または右クリックから削除)で開発版の登録を外す。
 ローカルのクローンを消しても Raycast 側の登録は残るため、先に Raycast 側から外すこと。
