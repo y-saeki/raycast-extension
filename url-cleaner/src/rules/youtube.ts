@@ -5,7 +5,11 @@ import type { UrlRule } from "./types";
  *
  * The `site` rules below funnel every video URL — youtu.be, Shorts, Live, embeds — into one
  * canonical `www.youtube.com/watch?v=<id>` form. The `global` rule at the end then shortens that
- * to `youtu.be/<id>`. Users who prefer youtube.com URLs only have to turn off that last rule.
+ * to `youtu.be/<id>`.
+ *
+ * That last rule ships switched off (see `defaultDisabledBuiltinRuleIds` in `./index`), so the
+ * canonical youtube.com form is what users get by default — including for URLs that came in as
+ * youtu.be, which the first rule expands. Turning the rule on gives short URLs throughout.
  */
 export const youtubeRules: UrlRule[] = [
   {
@@ -85,7 +89,7 @@ export const youtubeRules: UrlRule[] = [
     // YouTube Music URL, and rewriting it to youtu.be would point at a different service.
     id: "builtin.youtube.shorten",
     name: "YouTube: shorten to youtu.be",
-    description: "Rewrites youtube.com/watch?v=<id> to youtu.be/<id>. Turn this off to keep youtube.com URLs.",
+    description: "Rewrites youtube.com/watch?v=<id> to youtu.be/<id>. Off by default; turn it on for short URLs.",
     stage: "global",
     match: {
       hostPattern: "^(?:www\\.|m\\.)?youtube\\.com$",

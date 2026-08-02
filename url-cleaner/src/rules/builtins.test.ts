@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { parseRule } from "../lib/ruleSchema";
-import { builtinRules } from "./index";
+import { builtinRules, defaultDisabledBuiltinRuleIds } from "./index";
 import { BUILTIN_ID_PREFIX } from "./types";
 
 describe("built-in rules", () => {
@@ -46,5 +46,12 @@ describe("built-in rules", () => {
   it("run the youtu.be shortening rule in the global stage, after the site rules have normalized the URL", () => {
     const shorten = builtinRules.find((rule) => rule.id === "builtin.youtube.shorten");
     expect(shorten?.stage).toBe("global");
+  });
+
+  it("ship every rule that defaults to off, so the id cannot silently stop matching a rule", () => {
+    const ids = builtinRules.map((rule) => rule.id);
+    for (const id of defaultDisabledBuiltinRuleIds) {
+      expect(ids, id).toContain(id);
+    }
   });
 });

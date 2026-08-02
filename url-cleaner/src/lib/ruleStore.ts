@@ -1,10 +1,11 @@
 import { LocalStorage } from "@raycast/api";
-import { builtinRules } from "../rules";
+import { builtinRules, defaultDisabledBuiltinRuleIds } from "../rules";
 import { USER_ID_PREFIX, isBuiltinRuleId, type UrlRule } from "../rules/types";
 import { parseRules } from "./ruleSchema";
 
 const USER_RULES_KEY = "userRules";
 const DISABLED_RULE_IDS_KEY = "disabledRuleIds";
+const SEEDED_DEFAULT_DISABLED_KEY = "seededDefaultDisabledRuleIds";
 
 export interface RuleListEntry {
   rule: UrlRule;
@@ -37,19 +38,51 @@ export async function loadUserRules(): Promise<UrlRule[]> {
   return result.ok ? result.value : [];
 }
 
-async function loadDisabledRuleIds(): Promise<Set<string>> {
-  const stored = await readJson<unknown>(DISABLED_RULE_IDS_KEY, []);
+/** Reads a stored array of rule ids, ignoring anything in it that is not a string. */
+async function readRuleIds(key: string): Promise<Set<string>> {
+  const stored = await readJson<unknown>(key, []);
   return new Set(Array.isArray(stored) ? stored.filter((id): id is string => typeof id === "string") : []);
+}
+
+async function loadDisabledRuleIds(): Promise<Set<string>> {
+  return readRuleIds(DISABLED_RULE_IDS_KEY);
+}
+
+/**
+ * Applies the ship-disabled default to every rule in `defaultDisabledBuiltinRuleIds` whose id has
+ * not been seeded yet, and records that it has now been seeded.
+ *
+ * Seeding is keyed on the rule id rather than a schema version, so each rule is switched off exactly
+ * once, the first time the extension sees it. Enabling such a rule therefore sticks: its id stays in
+ * the seeded list, so the default is never applied a second time.
+ */
+async function seedDefaultDisabledRuleIds(disabledIds: Set<string>): Promise<Set<string>> {
+  const seededIds = await readRuleIds(SEEDED_DEFAULT_DISABLED_KEY);
+  const pending = defaultDisabledBuiltinRuleIds.filter((id) => !seededIds.has(id));
+  if (pending.length === 0) return disabledIds;
+
+  for (const id of pending) {
+    disabledIds.add(id);
+    seededIds.add(id);
+  }
+
+  await Promise.all([
+    LocalStorage.setItem(DISABLED_RULE_IDS_KEY, JSON.stringify(Array.from(disabledIds))),
+    LocalStorage.setItem(SEEDED_DEFAULT_DISABLED_KEY, JSON.stringify(Array.from(seededIds))),
+  ]);
+  return disabledIds;
 }
 
 /**
  * Loads every rule with its enabled state.
  *
  * Disabled ids are what gets persisted (rather than enabled ids), so built-in rules added by a future
- * version of the extension are enabled by default instead of silently staying off.
+ * version of the extension are enabled by default instead of silently staying off. Rules that should
+ * ship switched off are the exception, handled by `seedDefaultDisabledRuleIds`.
  */
 export async function loadRuleSet(): Promise<RuleSet> {
-  const [userRules, disabledIds] = await Promise.all([loadUserRules(), loadDisabledRuleIds()]);
+  const [userRules, storedDisabledIds] = await Promise.all([loadUserRules(), loadDisabledRuleIds()]);
+  const disabledIds = await seedDefaultDisabledRuleIds(storedDisabledIds);
 
   const entries: RuleListEntry[] = [
     ...userRules.map((rule) => ({ rule, isBuiltin: false, enabled: !disabledIds.has(rule.id) })),
@@ -125,10 +158,14 @@ export async function importUserRules(imported: UrlRule[]): Promise<{ added: num
   return { added, replaced };
 }
 
-/** Removes every user rule and re-enables every built-in rule. */
+/**
+ * Removes every user rule and restores the built-in rules to their as-installed state. Clearing the
+ * seeded ids means the next load switches the ship-disabled rules back off.
+ */
 export async function resetToDefaults(): Promise<void> {
   await LocalStorage.removeItem(USER_RULES_KEY);
   await LocalStorage.removeItem(DISABLED_RULE_IDS_KEY);
+  await LocalStorage.removeItem(SEEDED_DEFAULT_DISABLED_KEY);
 }
 
 /** Builds a stable, unique id for a rule the user just created. */

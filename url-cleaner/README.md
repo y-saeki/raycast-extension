@@ -20,7 +20,7 @@ URLの変換はすべて「ルール」で表現されます。組み込みル�
 | `builtin.youtube.video-path` | YouTube | Shorts・Live・埋め込み(`/shorts/`・`/live/`・`/embed/`・`/v/`)を動画URLに変換 |
 | `builtin.youtube.watch` | YouTube | `v`/`t`/`list`以外のパラメータを削除 |
 | `builtin.youtube.playlist` | YouTube | 再生リストURLから `list` 以外のパラメータを削除 |
-| `builtin.youtube.shorten` | YouTube | `youtube.com/watch?v=<id>` を `youtu.be/<id>` に短縮。**このルールを無効にすると `youtube.com` 形式で出力されます** |
+| `builtin.youtube.shorten` | YouTube | `youtube.com/watch?v=<id>` を `youtu.be/<id>` に短縮。**既定では無効**で、有効にすると短縮されます |
 | `builtin.meet.code` | Google Meet | 会議URL(`meet.google.com/xxx-yyyy-zzz`)から `authuser`・`hs`・`pli` 等のパラメータを全削除 |
 | `builtin.meet.lookup` | Google Meet | カレンダー由来の `lookup/<エイリアス>` URLからクエリパラメータを全削除 |
 | `builtin.figma.slug` | Figma | ファイル名スラッグと共有トークン(`t`)を除去し、`node-id`・`m`(Dev Mode等)・`ready-for-dev`・`version-id`・プロトタイプ再生用パラメータを保持。Design・プロトタイプ・FigJam・Slides・Sites・Buzz・Makeに対応 |
@@ -29,7 +29,7 @@ URLの変換はすべて「ルール」で表現されます。組み込みル�
 
 サイト固有ルールは**最初にマッチした1つだけ**が適用され、その後に全サイト対象のルールが適用されます。ユーザーのルールは組み込みルールより先に評価されるため、同じサイトのルールを自分で書けば挙動を上書きできます。
 
-YouTubeはこの仕組みを利用した2段構成になっています。サイトルールが `youtu.be`・Shorts・Live・埋め込みをすべて `youtube.com/watch?v=<id>` の形に揃え、最後に `builtin.youtube.shorten` がそれを `youtu.be/<id>` へ短縮します。既定では短いURLが出力され、`youtube.com` 形式のまま使いたい場合は `builtin.youtube.shorten` だけを無効にしてください。なお `music.youtube.com` は別サービスのURLになってしまうため短縮の対象外です。
+YouTubeはこの仕組みを利用した2段構成になっています。サイトルールが `youtu.be`・Shorts・Live・埋め込みをすべて `youtube.com/watch?v=<id>` の形に揃え、最後に `builtin.youtube.shorten` がそれを `youtu.be/<id>` へ短縮します。この最後の短縮ルールは**インストール直後は無効**なので、既定では `youtube.com/watch?v=<id>` 形式で出力されます。元のURLが `youtu.be` 形式だった場合も、1段目のルールで `youtube.com` 形式に展開されたままになります。短い `youtu.be` 形式で出力したい場合は `Manage URL Rules` から `builtin.youtube.shorten` を有効にしてください。なお `music.youtube.com` は別サービスのURLになってしまうため短縮の対象外です。
 
 ### ルールを追加する
 
@@ -41,15 +41,17 @@ YouTubeはこの仕組みを利用した2段構成になっています。サイ
 **すべてのURLにマッチするルール**が含まれる場合は警告が表示されます。信頼できない場所からコピーしたJSONを
 インポートすると、以後クリーンにしたURLが別のホストに書き換えられる可能性があるため、内容を確認してから取り込んでください。
 
-### ルールを無効にする
+### ルールを有効/無効にする
 
 組み込みルールを含め、すべてのルールは `Manage URL Rules` から個別に有効/無効を切り替えられます。設定はRaycastのローカルストレージに保存されます。
+
+組み込みルールは既定で有効ですが、`builtin.youtube.shorten` だけは例外で**インストール直後は無効**です。切り替えた状態はその後も保持され、拡張の更新やRaycastの再起動で勝手に戻ることはありません。`Reset to Defaults` を実行した場合だけ、インストール直後の状態(このルールは無効)に戻ります。
 
 ## プライバシーとセキュリティ
 
 - ネットワーク通信は一切行いません。URLの変換はすべてローカルで完結し、クリップボードの内容が外部に送信されることはありません。
 - 読み書きするデータは、コマンド実行時のクリップボードと、Raycastのローカルストレージに保存するルール設定
-  (自分で作成したルールと、無効にしたルールのID)だけです。
+  (自分で作成したルールと、無効にしたルールのID、既定で無効なルールを適用済みかどうかのID)だけです。
 - 認証情報やAPIキーは扱いません。拡張の設定項目(preferences)もありません。
 - ルールの正規表現はユーザーが書けるため、長さに上限(500文字)を設けて、
   破滅的バックトラッキングを狙うパターンが入り込む余地を狭めています。インポートできるルール数も200件までです。
@@ -70,7 +72,7 @@ npm run test   # ユニットテスト
 npm run lint
 ```
 
-組み込みルールは `src/rules/` にサイトごとのファイルとして置かれています。ルールを追加・変更する場合はこのディレクトリを編集してください。ルールの適用エンジンは `src/lib/ruleEngine.ts`、検証は `src/lib/ruleSchema.ts`、保存は `src/lib/ruleStore.ts` です。
+組み込みルールは `src/rules/` にサイトごとのファイルとして置かれています。ルールを追加・変更する場合はこのディレクトリを編集してください。既定で無効にするルールのIDは `src/rules/index.ts` の `defaultDisabledBuiltinRuleIds` に列挙します。ルールの適用エンジンは `src/lib/ruleEngine.ts`、検証は `src/lib/ruleSchema.ts`、保存は `src/lib/ruleStore.ts` です。
 
 ## 開発ドキュメント
 
