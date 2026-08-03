@@ -123,23 +123,27 @@ export function applyRule(rule: UrlRule, url: URL, captures: PathCaptures): void
  * Returns whether any rule matched.
  */
 export function applyRules(url: URL, rules: UrlRule[]): boolean {
-  let matched = false;
-
-  for (const rule of rules) {
-    if ((rule.scope ?? "site") !== "site") continue;
+  /** Applies the rule when it matches, reporting whether it did. */
+  function tryApply(rule: UrlRule): boolean {
     const captures = matchRule(rule, url);
-    if (!captures) continue;
+    if (!captures) return false;
     applyRule(rule, url, captures);
-    matched = true;
-    break;
+    return true;
   }
 
+  let matched = false;
+
+  // Only the first matching site rule runs.
   for (const rule of rules) {
-    if (rule.scope !== "global") continue;
-    const captures = matchRule(rule, url);
-    if (!captures) continue;
-    applyRule(rule, url, captures);
-    matched = true;
+    if ((rule.scope ?? "site") === "site" && tryApply(rule)) {
+      matched = true;
+      break;
+    }
+  }
+
+  // Every matching global rule runs, on the result of the site rule above.
+  for (const rule of rules) {
+    if (rule.scope === "global" && tryApply(rule)) matched = true;
   }
 
   return matched;
