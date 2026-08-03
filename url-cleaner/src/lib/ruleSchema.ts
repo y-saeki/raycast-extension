@@ -2,7 +2,6 @@ import {
   BUILTIN_ID_PREFIX,
   QUERY_MODES,
   RULE_SCOPES,
-  type QueryMode,
   type RuleActions,
   type RuleMatch,
   type RuleScope,
@@ -36,16 +35,66 @@ function unknownKeys(record: Record<string, unknown>, allowed: string[]): string
   return Object.keys(record).filter((key) => !allowed.includes(key));
 }
 
-function checkPattern(pattern: string, field: string, errors: string[]): void {
+/**
+ * Reads a list of strings, trimming the entries and dropping the empty ones.
+ * Returns undefined when the field is absent, invalid, or left nothing behind — in each case the
+ * field is simply not carried over to the parsed rule.
+ */
+function parseStringList(
+  value: unknown,
+  field: string,
+  errors: string[],
+  options: { lowercase?: boolean } = {},
+): string[] | undefined {
+  if (value === undefined) return undefined;
+  if (!isStringArray(value)) {
+    errors.push(`${field}: must be an array of strings`);
+    return undefined;
+  }
+  const entries = value.map((entry) => (options.lowercase ? entry.trim().toLowerCase() : entry.trim())).filter(Boolean);
+  return entries.length > 0 ? entries : undefined;
+}
+
+/** Reads an optional string, treating an empty one as absent. */
+function parseOptionalString(value: unknown, field: string, errors: string[]): string | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "string") {
+    errors.push(`${field}: must be a string`);
+    return undefined;
+  }
+  return value.length > 0 ? value : undefined;
+}
+
+/** Reads a regular expression source, rejecting one that is too long or does not compile. */
+function parsePattern(value: unknown, field: string, errors: string[]): string | undefined {
+  const pattern = parseOptionalString(value, field, errors);
+  if (pattern === undefined) return undefined;
+
   if (pattern.length > MAX_PATTERN_LENGTH) {
     errors.push(`${field}: must be at most ${MAX_PATTERN_LENGTH} characters`);
-    return;
+    return pattern;
   }
   try {
     new RegExp(pattern, "i");
   } catch (error) {
     errors.push(`${field}: not a valid regular expression (${(error as Error).message})`);
   }
+  return pattern;
+}
+
+/** Reads a value that has to be one of `allowed`. */
+function parseEnum<T extends string>(
+  value: unknown,
+  allowed: readonly T[],
+  field: string,
+  errors: string[],
+): T | undefined {
+  if (value === undefined) return undefined;
+  if (typeof value !== "string" || !allowed.includes(value as T)) {
+    errors.push(`${field}: must be one of ${allowed.join(", ")}`);
+    return undefined;
+  }
+  return value as T;
 }
 
 function parseMatch(input: unknown, scope: RuleScope, errors: string[]): RuleMatch | undefined {
@@ -60,35 +109,15 @@ function parseMatch(input: unknown, scope: RuleScope, errors: string[]): RuleMat
 
   const match: RuleMatch = {};
 
-  if (input.hosts !== undefined) {
-    if (!isStringArray(input.hosts)) {
-      errors.push("match.hosts: must be an array of strings");
-    } else {
-      const hosts = input.hosts.map((host) => host.trim().toLowerCase()).filter(Boolean);
-      if (hosts.length > 0) match.hosts = hosts;
-    }
-  }
+  const hosts = parseStringList(input.hosts, "match.hosts", errors, { lowercase: true });
+  const hostPattern = parsePattern(input.hostPattern, "match.hostPattern", errors);
+  const pathPattern = parsePattern(input.pathPattern, "match.pathPattern", errors);
+  const hasParams = parseStringList(input.hasParams, "match.hasParams", errors);
 
-  for (const key of ["hostPattern", "pathPattern"] as const) {
-    const value = input[key];
-    if (value === undefined) continue;
-    if (typeof value !== "string") {
-      errors.push(`match.${key}: must be a string`);
-      continue;
-    }
-    if (value.length === 0) continue;
-    checkPattern(value, `match.${key}`, errors);
-    match[key] = value;
-  }
-
-  if (input.hasParams !== undefined) {
-    if (!isStringArray(input.hasParams)) {
-      errors.push("match.hasParams: must be an array of strings");
-    } else {
-      const params = input.hasParams.map((param) => param.trim()).filter(Boolean);
-      if (params.length > 0) match.hasParams = params;
-    }
-  }
+  if (hosts) match.hosts = hosts;
+  if (hostPattern) match.hostPattern = hostPattern;
+  if (pathPattern) match.pathPattern = pathPattern;
+  if (hasParams) match.hasParams = hasParams;
 
   // A `global` rule is allowed to match every URL — that is what makes it global. A `site` rule
   // without any condition would match everything too, shadowing every rule after it. `hasParams`
@@ -112,32 +141,15 @@ function parseActions(input: unknown, errors: string[]): RuleActions | undefined
 
   const actions: RuleActions = {};
 
-  for (const key of ["setHost", "setPath"] as const) {
-    const value = input[key];
-    if (value === undefined) continue;
-    if (typeof value !== "string") {
-      errors.push(`actions.${key}: must be a string`);
-      continue;
-    }
-    if (value.length > 0) actions[key] = value;
-  }
+  const setHost = parseOptionalString(input.setHost, "actions.setHost", errors);
+  const setPath = parseOptionalString(input.setPath, "actions.setPath", errors);
+  const queryMode = parseEnum(input.queryMode, QUERY_MODES, "actions.queryMode", errors);
+  const queryParams = parseStringList(input.queryParams, "actions.queryParams", errors);
 
-  if (input.queryMode !== undefined) {
-    if (typeof input.queryMode !== "string" || !QUERY_MODES.includes(input.queryMode as QueryMode)) {
-      errors.push(`actions.queryMode: must be one of ${QUERY_MODES.join(", ")}`);
-    } else {
-      actions.queryMode = input.queryMode as QueryMode;
-    }
-  }
-
-  if (input.queryParams !== undefined) {
-    if (!isStringArray(input.queryParams)) {
-      errors.push("actions.queryParams: must be an array of strings");
-    } else {
-      const params = input.queryParams.map((param) => param.trim()).filter(Boolean);
-      if (params.length > 0) actions.queryParams = params;
-    }
-  }
+  if (setHost) actions.setHost = setHost;
+  if (setPath) actions.setPath = setPath;
+  if (queryMode) actions.queryMode = queryMode;
+  if (queryParams) actions.queryParams = queryParams;
 
   if (input.setParams !== undefined) {
     if (!isRecord(input.setParams) || !Object.values(input.setParams).every((v) => typeof v === "string")) {
@@ -194,14 +206,7 @@ export function parseRule(input: unknown, options: ParseRuleOptions = {}): Parse
     }
   }
 
-  let scope: RuleScope | undefined;
-  if (input.scope !== undefined) {
-    if (typeof input.scope !== "string" || !RULE_SCOPES.includes(input.scope as RuleScope)) {
-      errors.push(`scope: must be one of ${RULE_SCOPES.join(", ")}`);
-    } else {
-      scope = input.scope as RuleScope;
-    }
-  }
+  const scope = parseEnum(input.scope, RULE_SCOPES, "scope", errors);
 
   const match = parseMatch(input.match ?? {}, scope ?? "site", errors);
   const actions = parseActions(input.actions ?? {}, errors);
