@@ -1,142 +1,52 @@
-import {
-  Action,
-  ActionPanel,
-  Alert,
-  Clipboard,
-  Color,
-  confirmAlert,
-  Icon,
-  Keyboard,
-  List,
-  showToast,
-  Toast,
-} from "@raycast/api";
-import { useCallback, useEffect, useState } from "react";
+import { Action, ActionPanel, Color, Icon, Keyboard, List } from "@raycast/api";
 import { RuleForm } from "./components/RuleForm";
+import { useRuleSet } from "./hooks/useRuleSet";
 import { describeMatch } from "./lib/describeRule";
-import { formatImportConfirmation } from "./lib/importSummary";
-import { parseRulesJson } from "./lib/ruleSchema";
-import {
-  deleteUserRule,
-  importUserRules,
-  loadRuleSet,
-  loadUserRules,
-  resetToDefaults,
-  saveUserRule,
-  setRuleEnabled,
-  type RuleListEntry,
-} from "./lib/ruleStore";
+import { type RuleListEntry } from "./lib/ruleStore";
 import type { UrlRule } from "./rules/types";
 
 /** The rule list has room for a wider separator between a rule's match conditions. */
 const MATCH_SEPARATOR = "  ·  ";
 
+/**
+ * Raycast does not translate `cmd` to `ctrl` on Windows, so ambiguous modifiers have to be spelled
+ * out per platform. The rule actions use `Keyboard.Shortcut.Common`, which already carries both.
+ */
+function shiftShortcut(key: Keyboard.KeyEquivalent): Keyboard.Shortcut {
+  return {
+    macOS: { modifiers: ["cmd", "shift"], key },
+    Windows: { modifiers: ["ctrl", "shift"], key },
+  };
+}
+
 export default function Command() {
-  const [entries, setEntries] = useState<RuleListEntry[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  const reload = useCallback(async () => {
-    const { entries } = await loadRuleSet();
-    setEntries(entries);
-    setIsLoading(false);
-  }, []);
-
-  useEffect(() => {
-    reload();
-  }, [reload]);
-
-  async function handleToggle(entry: RuleListEntry) {
-    await setRuleEnabled(entry.rule.id, !entry.enabled);
-    await reload();
-    await showToast({
-      style: Toast.Style.Success,
-      title: entry.enabled ? "Rule disabled" : "Rule enabled",
-      message: entry.rule.name,
-    });
-  }
-
-  async function handleSave(rule: UrlRule) {
-    await saveUserRule(rule);
-    await reload();
-    await showToast({ style: Toast.Style.Success, title: "Rule saved", message: rule.name });
-  }
-
-  async function handleDelete(rule: UrlRule) {
-    const confirmed = await confirmAlert({
-      title: "Delete this rule?",
-      message: `"${rule.name}" will be removed. This cannot be undone.`,
-      primaryAction: { title: "Delete", style: Alert.ActionStyle.Destructive },
-    });
-    if (!confirmed) return;
-
-    await deleteUserRule(rule.id);
-    await reload();
-    await showToast({ style: Toast.Style.Success, title: "Rule deleted", message: rule.name });
-  }
-
-  async function handleExport() {
-    const userRules = await loadUserRules();
-    if (userRules.length === 0) {
-      await showToast({ style: Toast.Style.Failure, title: "No rules to export", message: "Create a rule first." });
-      return;
-    }
-    await Clipboard.copy(JSON.stringify(userRules, null, 2));
-    await showToast({
-      style: Toast.Style.Success,
-      title: "Copied to clipboard",
-      message: `${userRules.length} rule(s) as JSON`,
-    });
-  }
-
-  async function handleImport() {
-    const json = await Clipboard.readText();
-    if (!json?.trim()) {
-      await showToast({ style: Toast.Style.Failure, title: "Clipboard is empty" });
-      return;
-    }
-
-    const parsed = parseRulesJson(json);
-    if (!parsed.ok) {
-      await showToast({
-        style: Toast.Style.Failure,
-        title: "Could not import rules",
-        message: parsed.errors.join("\n"),
-      });
-      return;
-    }
-
-    const confirmed = await confirmAlert({
-      title: `Import ${parsed.value.length} rule(s)?`,
-      message: formatImportConfirmation(parsed.value),
-      primaryAction: { title: "Import" },
-    });
-    if (!confirmed) return;
-
-    const { added, replaced } = await importUserRules(parsed.value);
-    await reload();
-    await showToast({
-      style: Toast.Style.Success,
-      title: "Rules imported",
-      message: `${added} added, ${replaced} replaced`,
-    });
-  }
-
-  async function handleReset() {
-    const confirmed = await confirmAlert({
-      title: "Reset to defaults?",
-      message: "Every rule you created will be deleted and all built-in rules will be enabled again.",
-      primaryAction: { title: "Reset", style: Alert.ActionStyle.Destructive },
-    });
-    if (!confirmed) return;
-
-    await resetToDefaults();
-    await reload();
-    await showToast({ style: Toast.Style.Success, title: "Reset to defaults" });
-  }
+  const { entries, isLoading, toggle, save, remove, exportRules, importRules, reset } = useRuleSet();
 
   const userEntries = entries.filter((entry) => !entry.isBuiltin);
   const builtinEntries = entries.filter((entry) => entry.isBuiltin);
   const existingIds = entries.map((entry) => entry.rule.id);
+
+  /** An action that opens the rule form. The mode decides whether a source rule is required. */
+  function ruleFormAction(
+    props: { title: string; icon: Icon; shortcut: Keyboard.Shortcut } & (
+      { mode: "create" } | { mode: "edit" | "duplicate"; rule: UrlRule }
+    ),
+  ) {
+    return (
+      <Action.Push
+        title={props.title}
+        icon={props.icon}
+        shortcut={props.shortcut}
+        target={
+          props.mode === "create" ? (
+            <RuleForm mode="create" existingIds={existingIds} onSave={save} />
+          ) : (
+            <RuleForm mode={props.mode} rule={props.rule} existingIds={existingIds} onSave={save} />
+          )
+        }
+      />
+    );
+  }
 
   function actionsFor(entry?: RuleListEntry) {
     return (
@@ -146,71 +56,63 @@ export default function Command() {
             <Action
               title={entry.enabled ? "Disable Rule" : "Enable Rule"}
               icon={entry.enabled ? Icon.Circle : Icon.CheckCircle}
-              onAction={() => handleToggle(entry)}
+              onAction={() => toggle(entry)}
             />
           )}
-          <Action.Push
-            title="Create Rule"
-            icon={Icon.Plus}
-            shortcut={Keyboard.Shortcut.Common.New}
-            target={<RuleForm mode="create" existingIds={existingIds} onSave={handleSave} />}
-          />
-          {entry && !entry.isBuiltin && (
-            <Action.Push
-              title="Edit Rule"
-              icon={Icon.Pencil}
-              shortcut={Keyboard.Shortcut.Common.Edit}
-              target={<RuleForm mode="edit" rule={entry.rule} existingIds={existingIds} onSave={handleSave} />}
-            />
-          )}
+          {ruleFormAction({
+            mode: "create",
+            title: "Create Rule",
+            icon: Icon.Plus,
+            shortcut: Keyboard.Shortcut.Common.New,
+          })}
+          {entry &&
+            !entry.isBuiltin &&
+            ruleFormAction({
+              mode: "edit",
+              rule: entry.rule,
+              title: "Edit Rule",
+              icon: Icon.Pencil,
+              shortcut: Keyboard.Shortcut.Common.Edit,
+            })}
           {/* Offered for built-in rules too: duplicating one is the only way to start from it, since
               built-in rules themselves cannot be edited. */}
-          {entry && (
-            <Action.Push
-              title="Duplicate Rule"
-              icon={Icon.CopyClipboard}
-              shortcut={Keyboard.Shortcut.Common.Duplicate}
-              target={<RuleForm mode="duplicate" rule={entry.rule} existingIds={existingIds} onSave={handleSave} />}
-            />
-          )}
+          {entry &&
+            ruleFormAction({
+              mode: "duplicate",
+              rule: entry.rule,
+              title: "Duplicate Rule",
+              icon: Icon.CopyClipboard,
+              shortcut: Keyboard.Shortcut.Common.Duplicate,
+            })}
           {entry && !entry.isBuiltin && (
             <Action
               title="Delete Rule"
               icon={Icon.Trash}
               style={Action.Style.Destructive}
               shortcut={Keyboard.Shortcut.Common.Remove}
-              onAction={() => handleDelete(entry.rule)}
+              onAction={() => remove(entry.rule)}
             />
           )}
         </ActionPanel.Section>
 
         <ActionPanel.Section>
-          {/* Raycast does not translate `cmd` to `ctrl` on Windows, so ambiguous modifiers have to be
-              spelled out per platform. The shortcuts above use Keyboard.Shortcut.Common, which
-              already carries both. */}
           <Action
             title="Export Rules to Clipboard"
             icon={Icon.Download}
-            shortcut={{
-              macOS: { modifiers: ["cmd", "shift"], key: "e" },
-              Windows: { modifiers: ["ctrl", "shift"], key: "e" },
-            }}
-            onAction={handleExport}
+            shortcut={shiftShortcut("e")}
+            onAction={exportRules}
           />
           <Action
             title="Import Rules from Clipboard"
             icon={Icon.Upload}
-            shortcut={{
-              macOS: { modifiers: ["cmd", "shift"], key: "i" },
-              Windows: { modifiers: ["ctrl", "shift"], key: "i" },
-            }}
-            onAction={handleImport}
+            shortcut={shiftShortcut("i")}
+            onAction={importRules}
           />
           <Action
             title="Reset to Defaults"
             icon={Icon.ArrowCounterClockwise}
             style={Action.Style.Destructive}
-            onAction={handleReset}
+            onAction={reset}
           />
         </ActionPanel.Section>
       </ActionPanel>
