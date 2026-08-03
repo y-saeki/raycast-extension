@@ -1,4 +1,5 @@
 import type { UrlRule } from "../rules/types";
+import { describeMatch } from "./describeRule";
 
 export interface ImportSummary {
   /** One line per rule: its name and what it matches. */
@@ -10,16 +11,6 @@ export interface ImportSummary {
   rewrittenHosts: string[];
   /** True when a rule matches every URL rather than a specific site. */
   hasGlobalRule: boolean;
-}
-
-/** Renders a rule's match conditions the same way the rule list does, for the confirmation dialog. */
-function describeMatch(rule: UrlRule): string {
-  const { hosts, hostPattern, pathPattern } = rule.match;
-  const parts: string[] = [];
-  if (hosts?.length) parts.push(hosts.join(", "));
-  if (hostPattern) parts.push(`host =~ ${hostPattern}`);
-  if (pathPattern) parts.push(`path =~ ${pathPattern}`);
-  return parts.length > 0 ? parts.join(", ") : "every URL";
 }
 
 /**

@@ -13,6 +13,7 @@ import {
 } from "@raycast/api";
 import { useCallback, useEffect, useState } from "react";
 import { RuleForm } from "./components/RuleForm";
+import { describeMatch } from "./lib/describeRule";
 import { formatImportConfirmation } from "./lib/importSummary";
 import { parseRulesJson } from "./lib/ruleSchema";
 import {
@@ -27,15 +28,8 @@ import {
 } from "./lib/ruleStore";
 import type { UrlRule } from "./rules/types";
 
-/** One-line summary of what a rule matches, shown under its name. */
-function describeMatch(rule: UrlRule): string {
-  const { hosts, hostPattern, pathPattern } = rule.match;
-  const parts: string[] = [];
-  if (hosts?.length) parts.push(hosts.join(", "));
-  if (hostPattern) parts.push(`host =~ ${hostPattern}`);
-  if (pathPattern) parts.push(`path =~ ${pathPattern}`);
-  return parts.length > 0 ? parts.join("  ·  ") : "every URL";
-}
+/** The rule list has room for a wider separator between a rule's match conditions. */
+const MATCH_SEPARATOR = "  ·  ";
 
 export default function Command() {
   const [entries, setEntries] = useState<RuleListEntry[]>([]);
@@ -233,7 +227,7 @@ export default function Command() {
             : { source: Icon.Circle, tintColor: Color.SecondaryText }
         }
         title={entry.rule.name}
-        subtitle={describeMatch(entry.rule)}
+        subtitle={describeMatch(entry.rule, MATCH_SEPARATOR)}
         accessories={[
           entry.rule.scope === "global" ? { tag: "global" } : {},
           { text: entry.enabled ? "Enabled" : "Disabled" },
