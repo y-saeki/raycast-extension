@@ -1,6 +1,6 @@
 import { LocalStorage } from "@raycast/api";
 import { builtinRules, defaultDisabledBuiltinRuleIds } from "../rules";
-import { USER_ID_PREFIX, isBuiltinRuleId, type UrlRule } from "../rules/types";
+import { USER_ID_PREFIX, type UrlRule } from "../rules/types";
 import { parseRules } from "./ruleSchema";
 
 const USER_RULES_KEY = "userRules";
@@ -44,6 +44,10 @@ async function readRuleIds(key: string): Promise<Set<string>> {
   return new Set(Array.isArray(stored) ? stored.filter((id): id is string => typeof id === "string") : []);
 }
 
+async function writeRuleIds(key: string, ids: Set<string>): Promise<void> {
+  await LocalStorage.setItem(key, JSON.stringify(Array.from(ids)));
+}
+
 async function loadDisabledRuleIds(): Promise<Set<string>> {
   return readRuleIds(DISABLED_RULE_IDS_KEY);
 }
@@ -67,8 +71,8 @@ async function seedDefaultDisabledRuleIds(disabledIds: Set<string>): Promise<Set
   }
 
   await Promise.all([
-    LocalStorage.setItem(DISABLED_RULE_IDS_KEY, JSON.stringify(Array.from(disabledIds))),
-    LocalStorage.setItem(SEEDED_DEFAULT_DISABLED_KEY, JSON.stringify(Array.from(seededIds))),
+    writeRuleIds(DISABLED_RULE_IDS_KEY, disabledIds),
+    writeRuleIds(SEEDED_DEFAULT_DISABLED_KEY, seededIds),
   ]);
   return disabledIds;
 }
@@ -105,22 +109,28 @@ export async function setRuleEnabled(id: string, enabled: boolean): Promise<void
   } else {
     disabledIds.add(id);
   }
-  await LocalStorage.setItem(DISABLED_RULE_IDS_KEY, JSON.stringify(Array.from(disabledIds)));
+  await writeRuleIds(DISABLED_RULE_IDS_KEY, disabledIds);
 }
 
 async function writeUserRules(rules: UrlRule[]): Promise<void> {
   await LocalStorage.setItem(USER_RULES_KEY, JSON.stringify(rules));
 }
 
-/** Adds a new user rule, or replaces the existing one with the same id. */
-export async function saveUserRule(rule: UrlRule): Promise<void> {
-  const rules = await loadUserRules();
+/** Adds `rule` to `rules`, or replaces the existing one with the same id. Returns true when replaced. */
+function upsertRule(rules: UrlRule[], rule: UrlRule): boolean {
   const index = rules.findIndex((existing) => existing.id === rule.id);
   if (index >= 0) {
     rules[index] = rule;
-  } else {
-    rules.push(rule);
+    return true;
   }
+  rules.push(rule);
+  return false;
+}
+
+/** Adds a new user rule, or replaces the existing one with the same id. */
+export async function saveUserRule(rule: UrlRule): Promise<void> {
+  const rules = await loadUserRules();
+  upsertRule(rules, rule);
   await writeUserRules(rules);
 }
 
@@ -130,7 +140,7 @@ export async function deleteUserRule(id: string): Promise<void> {
 
   const disabledIds = await loadDisabledRuleIds();
   if (disabledIds.delete(id)) {
-    await LocalStorage.setItem(DISABLED_RULE_IDS_KEY, JSON.stringify(Array.from(disabledIds)));
+    await writeRuleIds(DISABLED_RULE_IDS_KEY, disabledIds);
   }
 }
 
@@ -144,12 +154,9 @@ export async function importUserRules(imported: UrlRule[]): Promise<{ added: num
   let replaced = 0;
 
   for (const rule of imported) {
-    const index = rules.findIndex((existing) => existing.id === rule.id);
-    if (index >= 0) {
-      rules[index] = rule;
+    if (upsertRule(rules, rule)) {
       replaced += 1;
     } else {
-      rules.push(rule);
       added += 1;
     }
   }
@@ -190,5 +197,3 @@ export function createUserRuleId(name: string, existingIds: string[] = []): stri
 export function duplicateRuleName(name: string): string {
   return `${name} (Copy)`;
 }
-
-export { isBuiltinRuleId };
