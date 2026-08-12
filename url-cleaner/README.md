@@ -18,8 +18,8 @@ URLの変換はすべて「ルール」で表現されます。組み込みル�
 | `builtin.amazon.product` | Amazon | 商品名スラッグや`ref`等を除去し `/dp/<ASIN>` の短い形に正規化 |
 | `builtin.x.status` | X (Twitter) | ステータスURLのクエリパラメータを全削除 |
 | `builtin.youtube.short` | YouTube | `youtu.be/<id>` を正規化(`t`・`list`は保持) |
-| `builtin.youtube.embed-playlist` | YouTube | `embed/videoseries?list=<id>` を再生リストページに変換 |
-| `builtin.youtube.video-path` | YouTube | Shorts・Live・埋め込み(`/shorts/`・`/live/`・`/embed/`・`/v/`)を動画URLに変換 |
+| `builtin.youtube.embed` | YouTube | 埋め込みURL(`/embed/<id>`)はそのまま維持し、`si`・`feature`・`pp` のみ削除 |
+| `builtin.youtube.video-path` | YouTube | Shorts・Live(`/shorts/`・`/live/`・`/v/`)を動画URLに変換 |
 | `builtin.youtube.watch` | YouTube | `v`/`t`/`list`以外のパラメータを削除 |
 | `builtin.youtube.playlist` | YouTube | 再生リストURLから `list` 以外のパラメータを削除 |
 | `builtin.youtube.shorten` | YouTube | `youtube.com/watch?v=<id>` を `youtu.be/<id>` に短縮。**既定では無効**で、有効にすると短縮されます |
@@ -31,7 +31,9 @@ URLの変換はすべて「ルール」で表現されます。組み込みル�
 
 サイト固有ルールは**最初にマッチした1つだけ**が適用され、その後に全サイト対象のルールが適用されます。ユーザーのルールは組み込みルールより先に評価されるため、同じサイトのルールを自分で書けば挙動を上書きできます。
 
-YouTubeはこの仕組みを利用した2段構成になっています。サイトルールが `youtu.be`・Shorts・Live・埋め込みをすべて `youtube.com/watch?v=<id>` の形に揃え、最後に `builtin.youtube.shorten` がそれを `youtu.be/<id>` へ短縮します。この最後の短縮ルールは**インストール直後は無効**なので、既定では `youtube.com/watch?v=<id>` 形式で出力されます。元のURLが `youtu.be` 形式だった場合も、1段目のルールで `youtube.com` 形式に展開されたままになります。短い `youtu.be` 形式で出力したい場合は `Manage URL Rules` から `builtin.youtube.shorten` を有効にしてください。なお `music.youtube.com` は別サービスのURLになってしまうため短縮の対象外です。
+YouTubeはこの仕組みを利用した2段構成になっています。サイトルールが `youtu.be`・Shorts・Liveをすべて `youtube.com/watch?v=<id>` の形に揃え、最後に `builtin.youtube.shorten` がそれを `youtu.be/<id>` へ短縮します。この最後の短縮ルールは**インストール直後は無効**なので、既定では `youtube.com/watch?v=<id>` 形式で出力されます。元のURLが `youtu.be` 形式だった場合も、1段目のルールで `youtube.com` 形式に展開されたままになります。短い `youtu.be` 形式で出力したい場合は `Manage URL Rules` から `builtin.youtube.shorten` を有効にしてください。なお `music.youtube.com` は別サービスのURLになってしまうため短縮の対象外です。
+
+埋め込みURL(`youtube.com/embed/<id>`)はこの2段構成の対象外で、`/embed/` のまま維持されます。動画URLに変換してしまうと埋め込みコードとして機能しなくなるためです。共有時に付く `si`・`feature`・`pp` は削除しますが、`autoplay`・`start`・`list` などの再生オプションはそのまま残ります。
 
 ### ルールを追加する
 

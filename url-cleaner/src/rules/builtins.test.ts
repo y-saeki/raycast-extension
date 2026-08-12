@@ -36,11 +36,9 @@ describe("built-in rules", () => {
     expect(slug).toBeLessThan(fallback);
   });
 
-  it("order the embedded playlist rule before the video path rule, which would otherwise shadow it", () => {
-    const playlist = builtinRules.findIndex((rule) => rule.id === "builtin.youtube.embed-playlist");
-    const videoPath = builtinRules.findIndex((rule) => rule.id === "builtin.youtube.video-path");
-    expect(playlist).toBeGreaterThanOrEqual(0);
-    expect(playlist).toBeLessThan(videoPath);
+  it("keep the YouTube embed rule off the paths that get rewritten to a watch URL", () => {
+    const videoPath = builtinRules.find((rule) => rule.id === "builtin.youtube.video-path");
+    expect(videoPath?.match.pathPattern).not.toContain("embed");
   });
 
   it("run the youtu.be shortening rule in the global scope, after the site rules have normalized the URL", () => {

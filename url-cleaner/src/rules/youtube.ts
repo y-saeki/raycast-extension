@@ -3,9 +3,12 @@ import type { UrlRule } from "./types";
 /**
  * YouTube is handled in two layers.
  *
- * The `site` rules below funnel every video URL — youtu.be, Shorts, Live, embeds — into one
- * canonical `www.youtube.com/watch?v=<id>` form. The `global` rule at the end then shortens that
- * to `youtu.be/<id>`.
+ * The `site` rules below funnel every video URL — youtu.be, Shorts, Live — into one canonical
+ * `www.youtube.com/watch?v=<id>` form. The `global` rule at the end then shortens that to
+ * `youtu.be/<id>`.
+ *
+ * Embed URLs (`/embed/<id>`) are the exception: rewriting one to a watch URL breaks the embed
+ * code it was copied for, so those keep their path and only lose their tracking parameters.
  *
  * That last rule ships switched off (see `defaultDisabledBuiltinRuleIds` in `./index`), so the
  * canonical youtube.com form is what users get by default — including for URLs that came in as
@@ -29,27 +32,29 @@ export const youtubeRules: UrlRule[] = [
     },
   },
   {
-    // Must come before the video-path rule: "videoseries" is a playlist marker, not a video id.
-    id: "builtin.youtube.embed-playlist",
-    name: "YouTube: embedded playlist URL",
-    description: "Turns youtube.com/embed/videoseries?list=<id> into the playlist page.",
+    // Embed URLs are left on /embed so the embed code they were copied for keeps working, which
+    // also covers /embed/videoseries?list=<id>, the embedded form of a playlist. `remove` rather
+    // than `keepOnly`: an embed carries player options (autoplay, start, loop, ...) that are the
+    // point of the URL, so only the parameters known to be tracking are dropped.
+    id: "builtin.youtube.embed",
+    name: "YouTube: embed URL",
+    description: "Removes the share tracking parameters (si, feature, pp) from /embed/<id>, keeping the embed URL.",
     match: {
       hosts: ["youtube.com"],
-      pathPattern: "^\\/embed\\/videoseries$",
+      pathPattern: "^\\/embed\\/",
     },
     actions: {
-      setPath: "/playlist",
-      queryMode: "keepOnly",
-      queryParams: ["list"],
+      queryMode: "remove",
+      queryParams: ["si", "feature", "pp"],
     },
   },
   {
     id: "builtin.youtube.video-path",
-    name: "YouTube: Shorts, Live and embed URL",
-    description: "Turns /shorts/<id>, /live/<id>, /embed/<id> and /v/<id> into a watch URL.",
+    name: "YouTube: Shorts and Live URL",
+    description: "Turns /shorts/<id>, /live/<id> and /v/<id> into a watch URL.",
     match: {
       hosts: ["youtube.com"],
-      pathPattern: "^\\/(?:shorts|live|embed|v)\\/([A-Za-z0-9_-]+)",
+      pathPattern: "^\\/(?:shorts|live|v)\\/([A-Za-z0-9_-]+)",
     },
     actions: {
       setPath: "/watch",
