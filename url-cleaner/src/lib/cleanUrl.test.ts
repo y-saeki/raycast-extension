@@ -64,6 +64,12 @@ describe("cleanUrl", () => {
     expect(cleanUrl(input)).toBe("https://www.youtube.com/embed/videoseries?list=PLabc123&autoplay=1");
   });
 
+  // The order YouTube's share dialog writes them in: si first, list second.
+  it("keeps the playlist id on an embedded playlist URL that leads with the share token", () => {
+    const input = "https://www.youtube.com/embed/videoseries?si=NlMCeEhG0GtWvaez&list=PL50C2A0ACF997D114";
+    expect(cleanUrl(input)).toBe("https://www.youtube.com/embed/videoseries?list=PL50C2A0ACF997D114");
+  });
+
   it("cleans a YouTube Music URL without moving it off music.youtube.com", () => {
     const input = "https://music.youtube.com/watch?v=dQw4w9WgXcQ&si=abc123&feature=share";
     expect(cleanUrl(input)).toBe("https://music.youtube.com/watch?v=dQw4w9WgXcQ");
