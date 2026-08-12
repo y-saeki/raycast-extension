@@ -32,7 +32,7 @@
 
 ## YouTube(2段構成の確認)
 
-`builtin.youtube.shorten` は**インストール直後は無効**です。4-1〜4-5 は既定の状態(無効のまま)で確認してください。
+`builtin.youtube.shorten` は**インストール直後は無効**です。4-1〜4-5・4-9・4-10 は既定の状態(無効のまま)で確認してください。
 
 | # | クリップボードにコピーするもの | 期待される結果 | 確認 |
 |---|---|---|---|
@@ -44,6 +44,8 @@
 | 4-6 | `builtin.youtube.shorten` を有効化 → `youtube.com/shorts/xxxx` をクリーン | `https://youtu.be/xxxx` に短縮され、ブラウザで開くと同じ動画が再生される | [ ] |
 | 4-7 | 4-6 の状態のまま `Manage URL Rules` を閉じて開き直す(可能ならRaycastも再起動) | `builtin.youtube.shorten` が有効のまま残っている(勝手に無効へ戻らない) | [ ] |
 | 4-8 | `Reset to Defaults` を実行 | `builtin.youtube.shorten` が無効に戻り、`youtube.com/watch?v=xxxx` 形式で出力される | [ ] |
+| 4-9 | 埋め込みURL(`youtube.com/embed/xxxx?si=...`) | `https://www.youtube.com/embed/xxxx` のまま(`/watch` に変換されない)。`<iframe src="...">` に貼ると動画が再生される | [ ] |
+| 4-10 | 再生オプション付きの埋め込みURL(`youtube.com/embed/xxxx?si=...&autoplay=1&start=42`) | `https://www.youtube.com/embed/xxxx?autoplay=1&start=42`(`si`だけが消え、再生オプションは残る) | [ ] |
 
 ## 汎用パラメータ除去(サイト固有ルール未対応のドメイン)
 

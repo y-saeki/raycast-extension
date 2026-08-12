@@ -39,9 +39,14 @@ describe("cleanUrl", () => {
     expect(cleanUrl(input)).toBe("https://youtu.be/dQw4w9WgXcQ?t=90");
   });
 
-  it("shortens a YouTube embed URL to youtu.be", () => {
-    const input = "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1";
-    expect(cleanUrl(input)).toBe("https://youtu.be/dQw4w9WgXcQ");
+  it("keeps a YouTube embed URL embeddable, dropping only its tracking parameters", () => {
+    const input = "https://www.youtube.com/embed/dQw4w9WgXcQ?si=abc123";
+    expect(cleanUrl(input)).toBe("https://www.youtube.com/embed/dQw4w9WgXcQ");
+  });
+
+  it("keeps the player options on a YouTube embed URL", () => {
+    const input = "https://www.youtube.com/embed/dQw4w9WgXcQ?si=abc123&autoplay=1&start=42";
+    expect(cleanUrl(input)).toBe("https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&start=42");
   });
 
   it("keeps the playlist a video URL is played from", () => {
@@ -54,9 +59,9 @@ describe("cleanUrl", () => {
     expect(cleanUrl(input)).toBe("https://www.youtube.com/playlist?list=PLabc123");
   });
 
-  it("turns an embedded playlist URL into the playlist page", () => {
-    const input = "https://www.youtube.com/embed/videoseries?list=PLabc123&autoplay=1";
-    expect(cleanUrl(input)).toBe("https://www.youtube.com/playlist?list=PLabc123");
+  it("keeps an embedded playlist URL on /embed/videoseries", () => {
+    const input = "https://www.youtube.com/embed/videoseries?list=PLabc123&autoplay=1&si=abc123";
+    expect(cleanUrl(input)).toBe("https://www.youtube.com/embed/videoseries?list=PLabc123&autoplay=1");
   });
 
   it("cleans a YouTube Music URL without moving it off music.youtube.com", () => {

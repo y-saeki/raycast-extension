@@ -201,8 +201,8 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
 | `builtin.amazon.product` | `src/rules/amazon.ts` | 商品URLを `/dp/<ASIN>` に短縮 |
 | `builtin.x.status` | `src/rules/x.ts` | 投稿URLのクエリを全削除 |
 | `builtin.youtube.short` | `src/rules/youtube.ts` | `youtu.be/<id>` を正規化 |
-| `builtin.youtube.embed-playlist` | `src/rules/youtube.ts` | `embed/videoseries?list=<id>` を再生リストページに変換 |
-| `builtin.youtube.video-path` | `src/rules/youtube.ts` | Shorts・Live・埋め込みを動画URLに変換 |
+| `builtin.youtube.embed` | `src/rules/youtube.ts` | 埋め込みURL(`/embed/`)を維持したまま `si`・`feature`・`pp` を削除 |
+| `builtin.youtube.video-path` | `src/rules/youtube.ts` | Shorts・Liveを動画URLに変換 |
 | `builtin.youtube.watch` | `src/rules/youtube.ts` | `v`/`t`/`list` 以外のパラメータを削除 |
 | `builtin.youtube.playlist` | `src/rules/youtube.ts` | 再生リストURLから `list` 以外を削除 |
 | `builtin.youtube.shorten` | `src/rules/youtube.ts` | `youtube.com/watch?v=<id>` を `youtu.be/<id>` に短縮(`global`、**既定で無効**) |
