@@ -44,8 +44,8 @@
     "@raycast/eslint-config": "^2.0.4",
     "@types/node": "22.19.17",
     "@types/react": "19.2.18",
-    "@vitest/coverage-v8": "^4.1.10",
-    "eslint": "^10.8.0",
+    "@vitest/coverage-v8": "^4.1.11",
+    "eslint": "^10.9.1",
     "prettier": "^3.3.3",
     "typescript": "^5.4.5",
     "vitest": "^4.1.10"
