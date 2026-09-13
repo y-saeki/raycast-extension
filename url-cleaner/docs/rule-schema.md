@@ -210,6 +210,8 @@ URL Cleanerのルールは、すべてプレーンなJSONデータで表現さ�
 | `builtin.meet.lookup` | `src/rules/meet.ts` | `lookup/<エイリアス>` URLのクエリを全削除 |
 | `builtin.figma.slug` | `src/rules/figma.ts` | ファイル名スラッグと共有トークンを除去(`node-id`・`m`・`ready-for-dev`・`version-id`・プロトタイプ再生用パラメータは保持)。`/design/`・`/proto/`・`/board/`・`/slides/`・`/deck/`・`/site/`・`/buzz/`・`/make/`・`/file/` が対象 |
 | `builtin.figma.share-token` | `src/rules/figma.ts` | 上記に当てはまらないFigma URLから、同じ保持対象以外を除去(パスは変更しない) |
+| `builtin.steam.store-item` | `src/rules/steam.ts` | ストアページURLを `/app/<id>/`・`/bundle/<id>/`・`/sub/<id>/` に短縮(`/agecheck/app/<id>/` も同様)。クエリは全削除 |
+| `builtin.steam.tracking` | `src/rules/steam.ts` | 上記以外のSteamストアURLから `snr`・`curator_clanid` を除去(パスは変更しない) |
 | `builtin.generic.tracking` | `src/rules/generic.ts` | `utm_*`・`gclid`・`fbclid` などを全URLから除去 |
 
 組み込みルールは設定画面から有効/無効を切り替えられます(編集はできません)。挙動を変えたい場合は、設定画面で組み込みルールを選んで `⌘D` で複製し、複製したルールを編集してください。組み込みルールは無効にしておけば、同じサイトに対して自分のルールだけが効きます。

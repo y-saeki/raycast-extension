@@ -27,6 +27,8 @@ URLの変換はすべて「ルール」で表現されます。組み込みル�
 | `builtin.meet.lookup` | Google Meet | カレンダー由来の `lookup/<エイリアス>` URLからクエリパラメータを全削除 |
 | `builtin.figma.slug` | Figma | ファイル名スラッグと共有トークン(`t`)を除去し、`node-id`・`m`(Dev Mode等)・`ready-for-dev`・`version-id`・プロトタイプ再生用パラメータを保持。Design・プロトタイプ・FigJam・Slides・Sites・Buzz・Makeに対応 |
 | `builtin.figma.share-token` | Figma | 上記に該当しないFigma URLから、上と同じ保持対象以外のパラメータを除去(パスは変更しない) |
+| `builtin.steam.store-item` | Steam | ストアページのURLを `/app/<id>/`・`/bundle/<id>/`・`/sub/<id>/` に短縮し、タイトルのスラッグとクエリパラメータ(`snr`・`curator_clanid`等)を全削除。年齢確認ページ(`/agecheck/app/<id>/`)もストアページに揃える |
+| `builtin.steam.tracking` | Steam | 上記以外のSteamストアURLから `snr`・`curator_clanid` のみ削除(検索語などページ自身のパラメータは保持) |
 | `builtin.generic.tracking` | (全サイト) | `utm_*`・`gclid`・`fbclid`などの汎用トラッキングパラメータを除去 |
 
 サイト固有ルールは**最初にマッチした1つだけ**が適用され、その後に全サイト対象のルールが適用されます。ユーザーのルールは組み込みルールより先に評価されるため、同じサイトのルールを自分で書けば挙動を上書きできます。

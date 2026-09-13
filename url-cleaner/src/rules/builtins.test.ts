@@ -36,6 +36,13 @@ describe("built-in rules", () => {
     expect(slug).toBeLessThan(fallback);
   });
 
+  it("order the specific Steam rule before its fallback, which would otherwise shadow it", () => {
+    const item = builtinRules.findIndex((rule) => rule.id === "builtin.steam.store-item");
+    const fallback = builtinRules.findIndex((rule) => rule.id === "builtin.steam.tracking");
+    expect(item).toBeGreaterThanOrEqual(0);
+    expect(item).toBeLessThan(fallback);
+  });
+
   it("keep the YouTube embed rule off the paths that get rewritten to a watch URL", () => {
     const videoPath = builtinRules.find((rule) => rule.id === "builtin.youtube.video-path");
     expect(videoPath?.match.pathPattern).not.toContain("embed");

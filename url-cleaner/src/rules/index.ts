@@ -2,6 +2,7 @@ import { amazonRules } from "./amazon";
 import { figmaRules } from "./figma";
 import { genericRules } from "./generic";
 import { meetRules } from "./meet";
+import { steamRules } from "./steam";
 import type { UrlRule } from "./types";
 import { xRules } from "./x";
 import { youtubeRules } from "./youtube";
@@ -19,6 +20,7 @@ export const builtinRules: UrlRule[] = [
   ...youtubeRules,
   ...meetRules,
   ...figmaRules,
+  ...steamRules,
   ...genericRules,
 ];
 
@@ -30,5 +32,5 @@ export const builtinRules: UrlRule[] = [
  */
 export const defaultDisabledBuiltinRuleIds: readonly string[] = ["builtin.youtube.shorten"];
 
-export { amazonRules, figmaRules, genericRules, meetRules, xRules, youtubeRules };
+export { amazonRules, figmaRules, genericRules, meetRules, steamRules, xRules, youtubeRules };
 export * from "./types";

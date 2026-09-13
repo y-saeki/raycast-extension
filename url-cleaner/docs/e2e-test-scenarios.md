@@ -29,6 +29,10 @@
 | 6b | プロトタイプ再生URL(`/proto/`、`page-id`・`starting-point-node-id`・`scaling`+`t`付き) | 名前スラッグと`t`だけが消え、再生用パラメータは残る | [ ] |
 | 6c | Figma SlidesのURL(`/slides/`または`/deck/`) | 名前スラッグと`t`が消え、`node-id`は残る | [ ] |
 | 6d | Figmaのファイル以外のページ(例: `https://www.figma.com/pricing`や3階層のマーケティングページ) | パスは一切変わらない(クエリの整理だけ) | [ ] |
+| 6e | Steamのストアページ(`store.steampowered.com/app/<id>/<タイトル>/?snr=...`) | `https://store.steampowered.com/app/<id>/` に短縮され、ブラウザで開くと同じストアページが表示される | [ ] |
+| 6f | Steamのバンドル/パッケージURL(`/bundle/<id>/...` または `/sub/<id>/...`) | 同様に `/bundle/<id>/`・`/sub/<id>/` に短縮され、同じページが開く | [ ] |
+| 6g | Steamの年齢確認ページのURL(`/agecheck/app/<id>/`) | `https://store.steampowered.com/app/<id>/` になり、同じ作品のストアページが開く | [ ] |
+| 6h | Steamの検索結果URL(`/search/?term=...&snr=...`) | `snr`だけが消え、`term`などの検索条件は残って同じ検索結果が開く | [ ] |
 
 ## YouTube(2段構成の確認)
 
@@ -76,7 +80,7 @@
 
 | # | 内容 | 期待結果 | 確認 |
 |---|---|---|---|
-| 18 | コマンドを開く | 「Built-in Rules」に組み込みルール13件が並び、`builtin.youtube.shorten` 以外は有効(緑チェック)、`builtin.youtube.shorten` だけ無効。「Your Rules」は空 | [ ] |
+| 18 | コマンドを開く | 「Built-in Rules」に組み込みルール15件が並び、`builtin.youtube.shorten` 以外は有効(緑チェック)、`builtin.youtube.shorten` だけ無効。「Your Rules」は空 | [ ] |
 | 19 | `builtin.amazon.product`(Amazon)を選んでEnterで無効化 → Amazon商品URLをコピーしてクリーン | `/dp/<ASIN>` への短縮が行われず、`utm_*`等の汎用パラメータ除去だけが効く | [ ] |
 | 20 | 上記ルールを再度有効化 → 同じURLをクリーン | シナリオ#2と同じ結果に戻る | [ ] |
 | 21 | `builtin.generic.tracking` を無効化 → `?utm_source=x` 付きURLをクリーン | `utm_source`が残る(HUDは「変更はありませんでした」) | [ ] |

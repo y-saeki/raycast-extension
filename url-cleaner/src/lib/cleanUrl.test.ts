@@ -155,6 +155,46 @@ describe("cleanUrl", () => {
     expect(cleanUrl(input)).toBe("https://www.figma.com/legal/us/privacy");
   });
 
+  it("shortens a Steam store app URL to /app/<id>/", () => {
+    const input = "https://store.steampowered.com/app/570/Dota_2/?snr=1_7_7_151_150_1&utm_source=newsletter";
+    expect(cleanUrl(input)).toBe("https://store.steampowered.com/app/570/");
+  });
+
+  it("shortens a Steam store app URL whose title slug is URL-encoded", () => {
+    const input =
+      "https://store.steampowered.com/app/1245620/ELDEN_RING/?l=japanese&snr=1_7_7_151_150_1&curator_clanid=12345";
+    expect(cleanUrl(input)).toBe("https://store.steampowered.com/app/1245620/");
+  });
+
+  it("shortens a Steam bundle and package URL the same way", () => {
+    expect(cleanUrl("https://store.steampowered.com/bundle/232/Portal_Bundle/?snr=1_7_7_151_150_1")).toBe(
+      "https://store.steampowered.com/bundle/232/",
+    );
+    expect(cleanUrl("https://store.steampowered.com/sub/29197/Some_Package/?snr=1_7_7_151_150_1")).toBe(
+      "https://store.steampowered.com/sub/29197/",
+    );
+  });
+
+  it("collapses a Steam age check URL onto the store page it gates", () => {
+    const input = "https://store.steampowered.com/agecheck/app/1145360/?snr=1_7_7_151_150_1";
+    expect(cleanUrl(input)).toBe("https://store.steampowered.com/app/1145360/");
+  });
+
+  it("keeps the search term on a Steam search URL, dropping only the tracking parameters", () => {
+    const input = "https://store.steampowered.com/search/?term=portal&supportedlang=japanese&snr=1_4_4__12";
+    expect(cleanUrl(input)).toBe("https://store.steampowered.com/search/?term=portal&supportedlang=japanese");
+  });
+
+  it("leaves the path of a non-item Steam store page alone", () => {
+    const input = "https://store.steampowered.com/publisher/Valve/?snr=1_4_4__12&curator_clanid=12345";
+    expect(cleanUrl(input)).toBe("https://store.steampowered.com/publisher/Valve/");
+  });
+
+  it("does not shorten a Steam store path that only contains an item id further down", () => {
+    const input = "https://store.steampowered.com/news/app/570/view/123456?snr=1_2108_9__2107";
+    expect(cleanUrl(input)).toBe("https://store.steampowered.com/news/app/570/view/123456");
+  });
+
   it("strips generic utm params from an unrecognized domain", () => {
     const input = "https://example.com/blog/post?utm_source=newsletter&utm_medium=email&id=42";
     expect(cleanUrl(input)).toBe("https://example.com/blog/post?id=42");
