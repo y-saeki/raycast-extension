@@ -5,6 +5,10 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 5
+    ignore:
+      # Types track the Node major the extension runs on (.nvmrc, engines), not the newest Node.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     groups:
       # Patch and minor bumps land as one PR so routine updates do not flood the queue.
       minor-and-patch:

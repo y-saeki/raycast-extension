@@ -66,7 +66,7 @@ YouTubeはこの仕組みを利用した2段構成になっています。サイ
 
 ## 開発
 
-Node.js 22.14以上が必要です([Raycast公式ドキュメント](https://developers.raycast.com/basics/getting-started))。開発手順はmacOSとWindowsで共通です(Windowsでは PowerShell か Windows Terminal から実行してください)。`nvm`を使う場合は以下でリポジトリの`.nvmrc`に沿ったバージョンに切り替えられます。
+Node.js 22.22.2以上が必要です(`@raycast/api` 2.x のCLIの要件。[Raycast公式の変更履歴](https://developers.raycast.com/misc/changelog)の2.0.0を参照)。開発手順はmacOSとWindowsで共通です(Windowsでは PowerShell か Windows Terminal から実行してください)。`nvm`を使う場合は以下でリポジトリの`.nvmrc`に沿ったバージョンに切り替えられます。
 
 ```sh
 nvm install
