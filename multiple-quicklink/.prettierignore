@@ -1,0 +1,8 @@
+node_modules
+dist
+package-lock.json
+
+# Markdown is written by hand: Prettier reindents the Japanese prose and realigns the tables in
+# ways that make the diffs harder to read than the formatting is worth.
+*.md
+docs/

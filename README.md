@@ -5,6 +5,7 @@ y-saeki が作成する Raycast Extension 置き場。拡張機能ごとに root
 ## Extensions
 
 - [url-cleaner](./url-cleaner) — クリップボード内の URL からトラッキングパラメータを除去し、サイトごとのルールで正規化する
+- [multiple-quicklink](./multiple-quicklink) — URL・ローカルファイル・deeplink を混ぜた複数のリンクを、1 回の操作でまとめて開く
 
 ## 開発版をインストールする
 

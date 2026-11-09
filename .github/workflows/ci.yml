@@ -50,3 +50,40 @@ jobs:
 
       - name: Audit dependencies
         run: npm audit --audit-level=high
+
+  multiple-quicklink:
+    name: multiple-quicklink
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: multiple-quicklink
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: multiple-quicklink/.nvmrc
+          cache: npm
+          cache-dependency-path: multiple-quicklink/package-lock.json
+
+      - run: npm ci
+
+      # `ray build` and `ray lint` talk to a locally installed Raycast app, so they stay a manual step
+      # on a machine running Raycast — macOS or Windows (see docs/store-release.md). What they wrap —
+      # ESLint, Prettier, types — is platform independent and runs here.
+      - name: Type check
+        run: npx tsc --noEmit
+
+      - name: ESLint
+        run: npx eslint .
+
+      - name: Prettier
+        run: npx prettier --check .
+
+      - name: Test
+        run: npm test
+
+      - name: Audit dependencies
+        run: npm audit --audit-level=high

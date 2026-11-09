@@ -1,0 +1,72 @@
+{
+  "$schema": "https://www.raycast.com/schemas/extension.json",
+  "name": "multiple-quicklink",
+  "title": "Multiple Quicklink",
+  "description": "Open several links at once — URLs, local files and Raycast deeplinks in a single set.",
+  "icon": "icon.png",
+  "author": "y-saeki",
+  "categories": [
+    "Productivity",
+    "Web"
+  ],
+  "keywords": [
+    "quicklink",
+    "links",
+    "bookmarks",
+    "workspace",
+    "launcher",
+    "open"
+  ],
+  "license": "MIT",
+  "platforms": [
+    "macOS",
+    "Windows"
+  ],
+  "commands": [
+    {
+      "name": "multiple-quicklink",
+      "title": "Search Multiple Quicklinks",
+      "description": "Open a saved set of links, and create, edit or delete sets.",
+      "mode": "view"
+    },
+    {
+      "name": "open-multiple-quicklink",
+      "title": "Open Multiple Quicklink",
+      "description": "Open every link in a saved set, looked up by its name.",
+      "mode": "no-view",
+      "arguments": [
+        {
+          "name": "name",
+          "type": "text",
+          "placeholder": "Set name",
+          "required": true
+        }
+      ]
+    }
+  ],
+  "dependencies": {
+    "@raycast/api": "^1.104.24",
+    "@raycast/utils": "^1.19.1"
+  },
+  "devDependencies": {
+    "@raycast/eslint-config": "^2.0.4",
+    "@types/node": "22.19.17",
+    "@types/react": "19.2.18",
+    "@vitest/coverage-v8": "^4.1.10",
+    "eslint": "^10.8.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.4.5",
+    "vitest": "^4.1.10"
+  },
+  "scripts": {
+    "build": "ray build",
+    "dev": "ray develop",
+    "lint": "ray lint",
+    "fix-lint": "ray lint --fix",
+    "test": "vitest run",
+    "publish": "npx @raycast/api@latest publish"
+  },
+  "engines": {
+    "node": ">=22.14.0"
+  }
+}
